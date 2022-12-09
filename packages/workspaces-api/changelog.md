@@ -1,3 +1,5 @@
+1.18.1
+fix: layouts import in Enterprise price is now reverted back to operating on top of the bridge protocol
 1.18.0
 chore: updated the typings
 1.17.3

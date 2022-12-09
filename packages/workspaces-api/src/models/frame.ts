@@ -4,6 +4,7 @@ import { PrivateDataManager } from "../shared/privateDataManager";
 import { FrameStreamData, WorkspaceStreamData, WindowStreamData } from "../types/protocol";
 import { Glue42Workspaces } from "../../workspaces.d";
 import { FramePrivateData } from "../types/privateData";
+import { UnsubscribeFunction } from "callback-registry";
 
 interface PrivateData {
     manager: PrivateDataManager;
@@ -328,12 +329,14 @@ export class Frame implements Glue42Workspaces.Frame {
         return unsubscribe;
     }
 
-    public async onInitializationRequested(callback: (context?: Glue42Workspaces.FrameInitializationContext) => Promise<void>): Promise<void> {
+    public async onInitializationRequested(callback: (context?: Glue42Workspaces.FrameInitializationContext) => void): Promise<UnsubscribeFunction> {
         checkThrowCallback(callback);
 
         if (!this.isInitialized) {
-            await callback(getData(this).summary.initializationContext);
+            callback(getData(this).summary.initializationContext);
         }
+
+        return () => {};
     }
 
     public async onFocusChanged(callback: (data: Glue42Workspaces.FrameFocusChangedData) => void): Promise<Glue42Workspaces.Unsubscribe> {

@@ -221,6 +221,13 @@ export class MainController implements WorkspacesController {
     }
 
     public async importLayouts(layouts: Glue42Workspaces.WorkspaceLayout[], mode: "replace" | "merge"): Promise<void> {
+
+        if ((window as any).glue42gd) {
+            // this is a soft-reversal to handle an import issue with GD
+            await Promise.all(layouts.map((layout) => this.bridge.send(OPERATIONS.importLayout.name, { layout, mode })));
+            return;
+        }
+
         await this.base.importLayouts(layouts, mode);
     }
 

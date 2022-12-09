@@ -831,7 +831,7 @@ export namespace Glue42Workspaces {
          * Notifies when a the frame is created without being initialized.
          * @param callback Callback function to handle the event. Receives a context for the initialization request
          */
-        onInitializationRequested(callback: (context?: Glue42Workspaces.FrameInitializationContext) => Promise<void>): Promise<void>
+        onInitializationRequested(callback: (context?: Glue42Workspaces.FrameInitializationContext) => void): Promise<Unsubscribe>;
 
         /**
          * Notifies when a new workspace was opened in this frame and returns an unsubscribe function.
