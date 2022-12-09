@@ -1,11 +1,11 @@
 import { Glue42Web } from "../../web";
-import { openWindowConfigDecoder, coreWindowDataDecoder, windowHelloDecoder, helloSuccessDecoder, simpleWindowDecoder, windowBoundsResultDecoder, windowUrlResultDecoder, windowMoveResizeConfigDecoder, windowTitleConfigDecoder, frameWindowBoundsResultDecoder } from "../shared/decoders";
+import { openWindowConfigDecoder, coreWindowDataDecoder, windowHelloDecoder, helloSuccessDecoder, simpleWindowDecoder, windowBoundsResultDecoder, windowUrlResultDecoder, windowMoveResizeConfigDecoder, windowTitleConfigDecoder, frameWindowBoundsResultDecoder, focusEventDataDecoder } from "../shared/decoders";
 import { BridgeOperation } from "../shared/types";
 import { WebWindowModel } from "./webWindow";
 
 export type WindowOperationTypes = "openWindow" | "getBounds" | "getFrameBounds" |
     "windowHello" | "windowAdded" | "windowRemoved" | "getUrl" |
-    "moveResize" | "focus" | "close" | "getTitle" | "setTitle";
+    "moveResize" | "focus" | "close" | "getTitle" | "setTitle" | "focusChange";
 
 export const operations: { [key in WindowOperationTypes]: BridgeOperation } = {
     openWindow: { name: "openWindow", dataDecoder: openWindowConfigDecoder, resultDecoder: coreWindowDataDecoder },
@@ -19,7 +19,8 @@ export const operations: { [key in WindowOperationTypes]: BridgeOperation } = {
     focus: { name: "focus", dataDecoder: simpleWindowDecoder },
     close: { name: "close", dataDecoder: simpleWindowDecoder },
     getTitle: { name: "getTitle", dataDecoder: simpleWindowDecoder, resultDecoder: windowTitleConfigDecoder },
-    setTitle: { name: "setTitle", dataDecoder: windowTitleConfigDecoder }
+    setTitle: { name: "setTitle", dataDecoder: windowTitleConfigDecoder },
+    focusChange: { name: "focusChange", dataDecoder: focusEventDataDecoder }
 };
 
 export interface WindowProjection {
@@ -36,6 +37,11 @@ export interface OpenWindowConfig {
     name: string;
     url: string;
     options?: Glue42Web.Windows.Settings;
+}
+
+export interface FocusEventData {
+    windowId: string;
+    hasFocus: boolean;
 }
 
 export interface SimpleWindowCommand {

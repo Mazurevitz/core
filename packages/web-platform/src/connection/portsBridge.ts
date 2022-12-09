@@ -14,6 +14,7 @@ import { Glue42Core } from "@glue42/core";
 import { GwClient } from "@glue42/gateway-web/web/gateway-web.js";
 import { TransactionsController } from "../controllers/transactions";
 import { defaultClientPortRequestTimeoutMS, defaultClientPreferredLogicTestTimeoutMS } from "../common/defaultConfig";
+import logger from "../shared/logger";
 
 export class PortsBridge {
 
@@ -37,6 +38,10 @@ export class PortsBridge {
         this.startUpPromise = new Promise<void>((resolve) => {
             this.startupResolve = resolve;
         });
+    }
+
+    private get logger(): Glue42Core.Logger.API | undefined {
+        return logger.get("ports.bridge.controller");
     }
 
     public async configure(config: InternalPlatformConfig): Promise<void> {
@@ -366,6 +371,13 @@ export class PortsBridge {
                 }
 
                 return this.transactionsController.completeTransaction(data.transactionId);
+            }
+
+            if (this.allClients.every((client) => client.client !== config.client)) {
+                // this was put in place in particular because of focus lost not being prevented when the client is closing
+                // this made triggering focus lost on already disappeared window impractical
+                this.logger?.trace(`Ignoring a protocol message, because the destination client has been disconnected: ${JSON.stringify(event.data)}`);
+                return;
             }
 
             config.client.send(event.data);

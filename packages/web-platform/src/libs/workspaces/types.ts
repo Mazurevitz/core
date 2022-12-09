@@ -68,7 +68,8 @@ export type WorkspacesOperationsTypes = "isWindowInWorkspace" |
     "getWorkspacesLayouts" |
     "setMaximizationBoundary" | 
     "operationCheck" |
-    "getWorkspaceWindowFrameBounds";
+    "getWorkspaceWindowFrameBounds" | 
+    "focusChange";
 
 export interface FrameQueryConfig {
     frameId?: string;
@@ -169,6 +170,7 @@ export interface FrameSnapshotResult {
 
 export interface FrameSummaryResult {
     id: string;
+    isFocused?: boolean;
     isInitialized?: boolean;
     initializationContext?: {
         context?: object;

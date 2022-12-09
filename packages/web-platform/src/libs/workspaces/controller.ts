@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Glue42Web } from "@glue42/web";
 import { Glue42Workspaces } from "@glue42/workspaces-api";
-import { BridgeOperation, InternalPlatformConfig, LibController, OperationCheckConfig, OperationCheckResult } from "../../common/types";
+import { BridgeOperation, FocusEventData, InternalPlatformConfig, LibController, OperationCheckConfig, OperationCheckResult } from "../../common/types";
 import { addContainerConfigDecoder, addItemResultDecoder, addWindowConfigDecoder, bundleConfigDecoder, deleteLayoutConfigDecoder, emptyFrameDefinitionDecoder, exportedLayoutsResultDecoder, frameBoundsResultDecoder, frameHelloDecoder, frameInitProtocolConfigDecoder, frameSnapshotConfigDecoder, frameSnapshotResultDecoder, frameStateConfigDecoder, frameStateResultDecoder, frameSummariesResultDecoder, frameSummaryDecoder, frameSummaryResultDecoder, getFrameSummaryConfigDecoder, getWorkspacesLayoutsConfigDecoder, getWorkspacesLayoutsResponseDecoder, getWorkspaceWindowsOnLayoutSaveContextConfigDecoder, getWorkspaceWindowsOnLayoutSaveContextResult, isWindowInSwimlaneResultDecoder, layoutSummariesDecoder, lockContainerDecoder, lockWindowDecoder, lockWorkspaceDecoder, moveFrameConfigDecoder, moveWindowConfigDecoder, openWorkspaceConfigDecoder, pinWorkspaceDecoder, resizeItemConfigDecoder, setItemTitleConfigDecoder, setMaximizationBoundaryConfigDecoder, setWorkspaceIconDecoder, simpleItemConfigDecoder, simpleWindowOperationSuccessResultDecoder, voidResultDecoder, workspaceCreateConfigDecoder, workspaceIconDecoder, workspaceLayoutDecoder, workspaceLayoutSaveConfigDecoder, workspaceSelectorDecoder, workspacesLayoutImportConfigDecoder, workspaceSnapshotResultDecoder, workspacesOperationDecoder, workspaceSummariesResultDecoder } from "./decoders";
 import { FramesController } from "./frames";
 import { AddContainerConfig, AddItemResult, AddWindowConfig, BundleConfig, DeleteLayoutConfig, ExportedLayoutsResult, FrameBoundsResult, FrameHello, FrameInitializationConfigProtocol, FrameQueryConfig, FrameSnapshotConfig, FrameSnapshotResult, FrameStateConfig, FrameStateResult, FrameSummariesResult, FrameSummaryResult, GetFrameSummaryConfig, GetWorkspacesLayoutsConfig, GetWorkspacesLayoutsResponse, GetWorkspaceWindowsOnLayoutSaveContextConfig, GetWorkspaceWindowsOnLayoutSaveContextResult, IsWindowInSwimlaneResult, LayoutSummariesResult, LayoutSummary, LockContainerConfig, LockWindowConfig, LockWorkspaceConfig, MoveFrameConfig, MoveWindowConfig, OpenWorkspaceConfig, PinWorkspaceConfig, ResizeItemConfig, SetItemTitleConfig, SetMaximizationBoundaryConfig, SetWorkspaceIconConfig, SimpleItemConfig, SimpleWindowOperationSuccessResult, WorkspaceCreateConfigProtocol, WorkspaceEventPayload, WorkspaceIconResult, WorkspaceSelector, WorkspacesLayoutImportConfig, WorkspaceSnapshotResult, WorkspacesOperationsTypes, WorkspaceStreamData, WorkspaceSummariesResult, WorkspaceSummaryResult, WorkspaceWindowOnSaveData } from "./types";
@@ -13,7 +13,7 @@ import { IoC } from "../../shared/ioc";
 import { FrameWindowBoundsResult, SimpleWindowCommand, WindowMoveResizeConfig } from "../windows/types";
 import { WindowsStateController } from "../../controllers/state";
 import { WorkspaceHibernationWatcher } from "./hibernationWatcher";
-import { operationCheckConfigDecoder, operationCheckResultDecoder, workspacesConfigDecoder } from "../../shared/decoders";
+import { focusEventDataDecoder, operationCheckConfigDecoder, operationCheckResultDecoder, workspacesConfigDecoder } from "../../shared/decoders";
 import deepMerge from "deepmerge";
 import { defaultLoadingConfig } from "./defaultConfig";
 import { PromiseWrap } from "../../shared/promisePlus";
@@ -72,7 +72,8 @@ export class WorkspacesController implements LibController {
         getWorkspaceWindowsOnLayoutSaveContext: { name: "getWorkspaceWindowsOnLayoutSaveContext", dataDecoder: getWorkspaceWindowsOnLayoutSaveContextConfigDecoder, resultDecoder: getWorkspaceWindowsOnLayoutSaveContextResult, execute: this.handleGetWorkspaceWindowsOnLayoutSaveContext.bind(this) },
         setMaximizationBoundary: { name: "setMaximizationBoundary", dataDecoder: setMaximizationBoundaryConfigDecoder, resultDecoder: voidResultDecoder, execute: this.handleSetMaximizationBoundary.bind(this) },
         operationCheck: { name: "operationCheck", dataDecoder: operationCheckConfigDecoder, resultDecoder: operationCheckResultDecoder, execute: this.handleOperationCheck.bind(this) },
-        getWorkspaceWindowFrameBounds: { name: "getWorkspaceWindowFrameBounds", resultDecoder: frameBoundsResultDecoder, dataDecoder: simpleItemConfigDecoder, execute: this.getWorkspaceWindowFrameBounds.bind(this) }
+        getWorkspaceWindowFrameBounds: { name: "getWorkspaceWindowFrameBounds", resultDecoder: frameBoundsResultDecoder, dataDecoder: simpleItemConfigDecoder, execute: this.getWorkspaceWindowFrameBounds.bind(this) },
+        focusChange: { name: "focusChange", dataDecoder: focusEventDataDecoder, execute: this.handleFocusEvent.bind(this) }
     };
 
     constructor(
@@ -97,7 +98,7 @@ export class WorkspacesController implements LibController {
 
         await Promise.all([
             this.glueController.createWorkspacesStream(),
-            this.glueController.createWorkspacesEventsReceiver(this.handleWorkspaceEvent.bind(this))
+            this.glueController.createWorkspacesEventsReceiver(this.bridgeWorkspaceEvent.bind(this))
         ]);
 
         await this.framesController.start(config.workspaces, config.windows.defaultWindowOpenBounds, this.operations.getFrameSummary);
@@ -158,7 +159,7 @@ export class WorkspacesController implements LibController {
         }
     }
 
-    public handleWorkspaceEvent(data: WorkspaceEventPayload): void {
+    public bridgeWorkspaceEvent(data: WorkspaceEventPayload): void {
         this.glueController.pushWorkspacesMessage(data);
 
         if (data.action === "closed" && data.type === "workspace") {
@@ -795,6 +796,32 @@ export class WorkspacesController implements LibController {
         this.logger?.trace(`[${commandId}] getWorkspaceWindowFrameBounds completed`);
 
         return { bounds: frameWindowBounds.bounds };
+    }
+
+    private async handleFocusEvent(data: FocusEventData, commandId: string): Promise<void> {
+        this.logger?.trace(`[${commandId}] handling focus event from frame id: ${data.windowId} and hasFocus: ${data.hasFocus}`);
+
+        try {
+            await this.framesController.getFrameInstance({ frameId: data.windowId });
+        } catch (error) {
+            this.logger?.trace(`[${commandId}] ignoring focus event for unrecognized frame with id: ${data.windowId}`);
+            return;
+        }
+
+        const eventPayload: WorkspaceEventPayload = {
+            type: "frame",
+            action: "focus",
+            payload: {
+                frameSummary: {
+                    id: data.windowId,
+                    isFocused: data.hasFocus
+                }
+            }
+        };
+
+        this.bridgeWorkspaceEvent(eventPayload);
+
+        this.logger?.trace(`[${commandId}] focus event from frame id: ${data.windowId} and hasFocus: ${data.hasFocus} handled`);
     }
 
     private async moveFrame(config: MoveFrameConfig, commandId: string): Promise<void> {

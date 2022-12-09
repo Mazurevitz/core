@@ -1,3 +1,5 @@
+1.18.0
+feat: added support for focusing events
 1.17.4
 chore: bump due to dependencies update
 1.17.3

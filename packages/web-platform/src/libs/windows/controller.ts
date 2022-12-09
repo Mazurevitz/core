@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Glue42Web } from "@glue42/web";
 import { generate } from "shortid";
-import { BridgeOperation, InternalPlatformConfig, LibController, OperationCheckConfig, OperationCheckResult, SessionWindowData } from "../../common/types";
+import { BridgeOperation, FocusEventData, InternalPlatformConfig, LibController, OperationCheckConfig, OperationCheckResult, SessionWindowData } from "../../common/types";
 import { GlueController } from "../../controllers/glue";
 import { SessionStorageController } from "../../controllers/session";
 import { PromiseWrap } from "../../shared/promisePlus";
@@ -14,7 +14,7 @@ import logger from "../../shared/logger";
 import { WorkspaceWindowData } from "../workspaces/types";
 import { workspaceWindowDataDecoder } from "../workspaces/decoders";
 import { IoC } from "../../shared/ioc";
-import { operationCheckConfigDecoder, operationCheckResultDecoder } from "../../shared/decoders";
+import { focusEventDataDecoder, operationCheckConfigDecoder, operationCheckResultDecoder } from "../../shared/decoders";
 
 export class WindowsController implements LibController {
     private started = false;
@@ -34,7 +34,8 @@ export class WindowsController implements LibController {
         setTitle: { name: "setTitle", dataDecoder: windowTitleConfigDecoder, execute: this.handleSetTitle.bind(this) },
         registerWorkspaceWindow: { name: "registerWorkspaceWindow", dataDecoder: workspaceWindowDataDecoder, execute: this.registerWorkspaceWindow.bind(this) },
         unregisterWorkspaceWindow: { name: "unregisterWorkspaceWindow", dataDecoder: simpleWindowDecoder, execute: this.handleWorkspaceClientRemoval.bind(this) },
-        operationCheck: { name: "operationCheck", dataDecoder: operationCheckConfigDecoder, resultDecoder: operationCheckResultDecoder, execute: this.handleOperationCheck.bind(this) }
+        operationCheck: { name: "operationCheck", dataDecoder: operationCheckConfigDecoder, resultDecoder: operationCheckResultDecoder, execute: this.handleOperationCheck.bind(this) },
+        focusChange: { name: "focusChange", dataDecoder: focusEventDataDecoder, execute: this.handleFocusEvent.bind(this) }
     }
 
     constructor(
@@ -159,7 +160,7 @@ export class WindowsController implements LibController {
 
         const somethingRemoved = this.sessionController.fullWindowClean(windowId);
 
-        
+
         if (somethingRemoved) {
             this.glueController.clearContext(windowId, "window").catch(() => { });
             this.emitStreamData("windowRemoved", { windowId });
@@ -182,6 +183,14 @@ export class WindowsController implements LibController {
         this.emitStreamData("windowAdded", { windowId: data.windowId, name: data.name });
 
         this.logger?.trace(`[${commandId}] workspace window registered successfully with id ${data.windowId} and name ${data.name}`);
+    }
+
+    private async handleFocusEvent(data: FocusEventData, commandId: string): Promise<void> {
+        this.logger?.trace(`[${commandId}] handling focus event from window id: ${data.windowId} and hasFocus: ${data.hasFocus}`);
+
+        this.emitStreamData("focusChange", data);
+
+        this.logger?.trace(`[${commandId}] focus event from window id: ${data.windowId} and hasFocus: ${data.hasFocus} handled`);
     }
 
     private async handleOperationCheck(config: OperationCheckConfig): Promise<OperationCheckResult> {

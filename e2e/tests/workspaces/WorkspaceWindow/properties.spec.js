@@ -213,7 +213,7 @@ describe("properties: ", () => {
         it(`Should be undefined`, () => {
             const window = workspace.getAllWindows()[0];
 
-            expect(typeof window.focused).to.eql("undefined");
+            expect(window.focused).to.not.be.ok;
         });
     });
 

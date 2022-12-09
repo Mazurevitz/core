@@ -152,6 +152,8 @@ export namespace Gtf {
 
         compareWindows(actualWindow: Glue42Web.Windows.WebWindow, expectedWindow: Glue42Web.Windows.WebWindow): Promise<boolean>;
 
+        checkIsValidWebWindow(webWindow: Glue42Web.Windows.WebWindow, expect: Chai.ExpectStatic): void;
+
         closeAllOtherWindows(): Promise<void>;
 
         getPlatformWindow(): Promise<Glue42Web.Windows.WebWindow>;

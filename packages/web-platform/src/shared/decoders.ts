@@ -3,7 +3,7 @@ import { Glue42Web } from "@glue42/web";
 import { Glue42Workspaces } from "@glue42/workspaces-api";
 import { anyJson, array, boolean, constant, Decoder, fail, lazy, number, object, oneOf, optional, string } from "decoder-validate";
 import { Glue42WebPlatform } from "../../platform";
-import { LibDomains, OperationCheckConfig, OperationCheckResult, SystemOperationTypes } from "../common/types";
+import { FocusEventData, LibDomains, OperationCheckConfig, OperationCheckResult, SystemOperationTypes } from "../common/types";
 
 export const nonNegativeNumberDecoder: Decoder<number> = number().where((num) => num >= 0, "Expected a non-negative number");
 export const nonEmptyStringDecoder: Decoder<string> = string().where((s) => s.length > 0, "Expected a non-empty string");
@@ -424,4 +424,9 @@ export const interceptorRegistrationRequestDecoder: Decoder<Glue42WebPlatform.Pl
         domain: libDomainDecoder,
         operation: nonEmptyStringDecoder
     }))
+});
+
+export const focusEventDataDecoder: Decoder<FocusEventData> = object({
+    windowId: nonEmptyStringDecoder,
+    hasFocus: boolean()
 });

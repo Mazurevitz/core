@@ -34,13 +34,20 @@ export class WebWindowModel {
         }
     }
 
+    public processSelfFocusEvent(hasFocus: boolean): void {
+        this.me.isFocused = hasFocus;
+
+        this.registry.execute("focus-change", this.me);
+    }
+
     public async toApi(): Promise<Glue42Web.Windows.WebWindow> {
 
         this.ctxUnsubscribe = await this._bridge.contextLib.subscribe(this.myCtxKey, (data) => this.registry.execute("context-updated", data));
 
-        const api = {
+        this.me = {
             id: this.id,
             name: this.name,
+            isFocused: false,
             getURL: this.getURL.bind(this),
             moveResize: this.moveResize.bind(this),
             resizeTo: this.resizeTo.bind(this),
@@ -53,10 +60,9 @@ export class WebWindowModel {
             getContext: this.getContext.bind(this),
             updateContext: this.updateContext.bind(this),
             setContext: this.setContext.bind(this),
-            onContextUpdated: this.onContextUpdated.bind(this)
+            onContextUpdated: this.onContextUpdated.bind(this),
+            onFocusChange: this.onFocusChange.bind(this)
         };
-
-        this.me = Object.freeze(api);
 
         return this.me;
     }
@@ -64,6 +70,14 @@ export class WebWindowModel {
     private async getURL(): Promise<string> {
         const result = await this._bridge.send<SimpleWindowCommand, WindowUrlResult>("windows", operations.getUrl, { windowId: this.id });
         return result.url;
+    }
+
+    private onFocusChange(callback: (window: Glue42Web.Windows.WebWindow) => void): UnsubscribeFunction {
+        if (typeof callback !== "function") {
+            throw new Error("Cannot subscribe to context changes, because the provided callback is not a function!");
+        }
+
+        return this.registry.add("focus-change", callback);
     }
 
     private async moveResize(dimension: Partial<Glue42Web.Windows.Bounds>): Promise<Glue42Web.Windows.WebWindow> {

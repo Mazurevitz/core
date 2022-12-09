@@ -192,3 +192,8 @@ export interface PluginsConfig {
     api: Glue42WebPlatform.API;
     handlePluginMessage: (args: Glue42WebPlatform.Plugins.BaseControlMessage, pluginName: string) => Promise<any>;
 }
+
+export interface FocusEventData {
+    windowId: string;
+    hasFocus: boolean;
+}

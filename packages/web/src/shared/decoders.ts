@@ -3,7 +3,7 @@ import { Decoder, string, number, object, constant, oneOf, optional, array, bool
 import { Glue42Web } from "../../web";
 import { AppsImportOperation, AppHelloSuccess, ApplicationData, ApplicationStartConfig, AppManagerOperationTypes, AppRemoveConfig, BaseApplicationData, BasicInstanceData, InstanceData, AppsExportOperation, FDC3Definition, AppDirectoryStateChange } from "../appManager/protocol";
 import { AllLayoutsFullConfig, AllLayoutsSummariesResult, GetAllLayoutsConfig, LayoutsImportConfig, LayoutsOperationTypes, OptionalSimpleLayoutResult, RestoreLayoutConfig, SaveLayoutConfig, SaveRequestClientResponse, PlatformSaveRequestConfig, SimpleLayoutConfig, SimpleLayoutResult, PermissionStateResult, SimpleAvailabilityResult } from "../layouts/protocol";
-import { HelloSuccess, OpenWindowConfig, CoreWindowData, WindowHello, WindowOperationTypes, SimpleWindowCommand, WindowTitleConfig, WindowBoundsResult, WindowMoveResizeConfig, WindowUrlResult, FrameWindowBoundsResult } from "../windows/protocol";
+import { HelloSuccess, OpenWindowConfig, CoreWindowData, WindowHello, WindowOperationTypes, SimpleWindowCommand, WindowTitleConfig, WindowBoundsResult, WindowMoveResizeConfig, WindowUrlResult, FrameWindowBoundsResult, FocusEventData } from "../windows/protocol";
 import { IntentsOperationTypes, WrappedIntentFilter, WrappedIntents } from "../intents/protocol";
 import { IntentResolverResponse, LibDomains, OperationCheckConfig, OperationCheckResult, SimpleItemIdRequest, WorkspaceFrameBoundsResult } from "./types";
 import { NotificationEventPayload, NotificationsOperationTypes, PermissionQueryResult, PermissionRequestResult, RaiseNotification } from "../notifications/protocol";
@@ -22,7 +22,7 @@ export const libDomainDecoder: Decoder<LibDomains> = oneOf<"system" | "windows" 
     constant("extension")
 );
 
-export const windowOperationTypesDecoder: Decoder<WindowOperationTypes> = oneOf<"openWindow" | "getBounds" | "getFrameBounds" | "windowHello" | "windowAdded" | "windowRemoved" | "getUrl" | "moveResize" | "focus" | "close" | "getTitle" | "setTitle">(
+export const windowOperationTypesDecoder: Decoder<WindowOperationTypes> = oneOf<"openWindow" | "getBounds" | "getFrameBounds" | "windowHello" | "windowAdded" | "windowRemoved" | "getUrl" | "moveResize" | "focus" | "close" | "getTitle" | "setTitle" | "focusChange">(
     constant("openWindow"),
     constant("windowHello"),
     constant("windowAdded"),
@@ -34,7 +34,8 @@ export const windowOperationTypesDecoder: Decoder<WindowOperationTypes> = oneOf<
     constant("focus"),
     constant("close"),
     constant("getTitle"),
-    constant("setTitle")
+    constant("setTitle"),
+    constant("focusChange")
 );
 
 export const appManagerOperationTypesDecoder: Decoder<AppManagerOperationTypes> = oneOf<"appHello" | "appDirectoryStateChange" | "instanceStarted" | "instanceStopped" | "applicationStart" | "instanceStop" | "clear">(
@@ -124,6 +125,11 @@ export const helloSuccessDecoder: Decoder<HelloSuccess> = object({
 export const windowTitleConfigDecoder: Decoder<WindowTitleConfig> = object({
     windowId: nonEmptyStringDecoder,
     title: string()
+});
+
+export const focusEventDataDecoder: Decoder<FocusEventData> = object({
+    windowId: nonEmptyStringDecoder,
+    hasFocus: boolean()
 });
 
 export const windowMoveResizeConfigDecoder: Decoder<WindowMoveResizeConfig> = object({

@@ -163,12 +163,26 @@ export namespace Glue42Web {
              * @param callback Callback function to handle the event. Receives the removed window as a parameter. Returns an unsubscribe function.
              */
             onWindowRemoved(callback: (window: WebWindow) => void): UnsubscribeFunction;
+
+            /**
+             * Notifies when a window receives focus.
+             * @param callback Callback function to handle the event. Receives the window instance as a parameter. Returns an unsubscribe function.
+             */
+            onWindowGotFocus(callback: (window: WebWindow) => void): UnsubscribeFunction;
+
+            /**
+             * Notifies when a window loses focus.
+             * @param callback Callback function to handle the event. Receives the window instance as a parameter. Returns an unsubscribe function.
+             */
+            onWindowLostFocus(callback: (window: WebWindow) => void): UnsubscribeFunction;
         }
 
         export interface WebWindow {
             id: string;
 
             name: string;
+
+            isFocused: boolean;
 
             /**
              * Gets the current URL of the window.
@@ -245,6 +259,12 @@ export namespace Glue42Web {
              * @param callback The function which will be invoked when a change to the window's context happens. The function will be called with the new context and window as arguments.
              */
             onContextUpdated(callback: (context: any, window: WebWindow) => void): UnsubscribeFunction;
+
+            /**
+             * Notifies when the window focus is changed.
+             * @param callback Callback function to handle the event. Returns an unsubscribe function.
+             */
+            onFocusChange(callback: (window: WebWindow) => void): UnsubscribeFunction;
         }
         export interface Settings {
 

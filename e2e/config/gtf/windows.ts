@@ -35,6 +35,25 @@ export class GtfWindows implements Gtf.Windows {
         return `windows.integration.tests.window.${Date.now()}.${this.counter}`;
     }
 
+    public checkIsValidWebWindow(webWindow: Glue42Web.Windows.WebWindow, expect: Chai.ExpectStatic): void {
+        expect(webWindow.id).to.be.a("string");
+        expect(webWindow.name).to.be.a("string");
+        expect(webWindow.getURL).to.be.a("function");
+        expect(webWindow.moveResize).to.be.a("function");
+        expect(webWindow.resizeTo).to.be.a("function");
+        expect(webWindow.moveTo).to.be.a("function");
+        expect(webWindow.focus).to.be.a("function");
+        expect(webWindow.close).to.be.a("function");
+        expect(webWindow.getTitle).to.be.a("function");
+        expect(webWindow.setTitle).to.be.a("function");
+        expect(webWindow.getBounds).to.be.a("function");
+        expect(webWindow.getContext).to.be.a("function");
+        expect(webWindow.updateContext).to.be.a("function");
+        expect(webWindow.setContext).to.be.a("function");
+        expect(webWindow.onContextUpdated).to.be.a("function");
+        expect(webWindow.onFocusChange).to.be.a("function");
+    }
+
     public async compareWindows(actualWindow: Glue42Web.Windows.WebWindow, expectedWindow: Glue42Web.Windows.WebWindow): Promise<boolean> {
         const [
             actualUrl, actualTitle, actualBounds, actualContext,

@@ -13,7 +13,7 @@ export const workspacesOperationDecoder: Decoder<WorkspacesOperationsTypes> = on
     "ejectWindow" | "setItemTitle" | "moveWindowTo" | "addWindow" | "addContainer" |
     "bundleWorkspace" | "changeFrameState" | "getFrameState" | "getFrameBounds" | "frameHello" | "hibernateWorkspace" | "resumeWorkspace" | "getWorkspacesConfig" |
     "lockWorkspace" | "lockContainer" | "lockWindow" | "pinWorkspace" | "unpinWorkspace" | "getWorkspaceIcon" | "setWorkspaceIcon" | "createFrame" | "initFrame" | "checkStarted" | "getPlatformFrameId" |
-    "getWorkspaceWindowsOnLayoutSaveContext" | "getWorkspacesLayouts" | "setMaximizationBoundary" | "operationCheck" | "getWorkspaceWindowFrameBounds"
+    "getWorkspaceWindowsOnLayoutSaveContext" | "getWorkspacesLayouts" | "setMaximizationBoundary" | "operationCheck" | "getWorkspaceWindowFrameBounds" | "focusChange"
 >(
     constant("isWindowInWorkspace"),
     constant("createWorkspace"),
@@ -63,7 +63,8 @@ export const workspacesOperationDecoder: Decoder<WorkspacesOperationsTypes> = on
     constant("getWorkspacesLayouts"),
     constant("setMaximizationBoundary"),
     constant("operationCheck"),
-    constant("getWorkspaceWindowFrameBounds")
+    constant("getWorkspaceWindowFrameBounds"),
+    constant("focusChange")
 );
 
 export const frameHelloDecoder: Decoder<FrameHello> = object({
@@ -331,7 +332,12 @@ export const getFrameSummaryConfigDecoder: Decoder<GetFrameSummaryConfig> = obje
 });
 
 export const frameSummaryDecoder: Decoder<FrameSummaryResult> = object({
-    id: nonEmptyStringDecoder
+    id: nonEmptyStringDecoder,
+    isFocused: optional(boolean()),
+    isInitialized: optional(boolean()),
+    initializationContext: optional(object({
+        context: optional(anyJson())
+    }))
 });
 
 export const workspaceSummaryDecoder: Decoder<Glue42Workspaces.WorkspaceSummary> = object({
@@ -535,9 +541,7 @@ export const exportedLayoutsResultDecoder: Decoder<ExportedLayoutsResult> = obje
     layouts: array(workspaceLayoutDecoder)
 });
 
-export const frameSummaryResultDecoder: Decoder<FrameSummaryResult> = object({
-    id: nonEmptyStringDecoder,
-});
+export const frameSummaryResultDecoder: Decoder<FrameSummaryResult> = frameSummaryDecoder;
 
 export const frameSummariesResultDecoder: Decoder<FrameSummariesResult> = object({
     summaries: array(frameSummaryResultDecoder)

@@ -2,7 +2,7 @@ import { boolean, constant, Decoder, number, object, oneOf, optional, string } f
 import { nonEmptyStringDecoder, nonNegativeNumberDecoder, windowBoundsDecoder, windowOpenSettingsDecoder } from "../../shared/decoders";
 import { FrameWindowBoundsResult, OpenWindowConfig, OpenWindowSuccess, SimpleWindowCommand, WindowBoundsResult, WindowMoveResizeConfig, WindowOperationsTypes, WindowTitleConfig, WindowUrlResult } from "./types";
 
-export const windowOperationDecoder: Decoder<WindowOperationsTypes> = oneOf<"openWindow" | "windowHello" | "getUrl" | "getTitle" | "setTitle" | "moveResize" | "focus" | "close" | "getBounds" | "getFrameBounds" | "registerWorkspaceWindow" | "unregisterWorkspaceWindow" | "operationCheck">(
+export const windowOperationDecoder: Decoder<WindowOperationsTypes> = oneOf<"openWindow" | "windowHello" | "getUrl" | "getTitle" | "setTitle" | "moveResize" | "focus" | "close" | "getBounds" | "getFrameBounds" | "registerWorkspaceWindow" | "unregisterWorkspaceWindow" | "operationCheck" | "focusChange">(
     constant("openWindow"),
     constant("windowHello"),
     constant("getUrl"),
@@ -15,7 +15,8 @@ export const windowOperationDecoder: Decoder<WindowOperationsTypes> = oneOf<"ope
     constant("getFrameBounds"),
     constant("registerWorkspaceWindow"),
     constant("unregisterWorkspaceWindow"),
-    constant("operationCheck")
+    constant("operationCheck"),
+    constant("focusChange")
 );
 
 export const openWindowConfigDecoder: Decoder<OpenWindowConfig> = object({
@@ -60,3 +61,4 @@ export const windowTitleConfigDecoder: Decoder<WindowTitleConfig> = object({
     windowId: nonEmptyStringDecoder,
     title: string()
 });
+

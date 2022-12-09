@@ -3,14 +3,16 @@ import { Glue42Core } from "@glue42/core";
 import { Glue42Web } from "../../web";
 import { GlueBridge } from "../communication/bridge";
 import { nonEmptyStringDecoder, windowOpenSettingsDecoder, windowOperationTypesDecoder } from "../shared/decoders";
-import { LibController } from "../shared/types";
-import { HelloSuccess, OpenWindowConfig, CoreWindowData, WindowHello, operations, WindowBoundsResult, WindowTitleConfig, WindowUrlResult, WindowMoveResizeConfig, WindowProjection } from "./protocol";
+import { LibController, LibDomains, OperationCheckConfig, OperationCheckResult } from "../shared/types";
+import { HelloSuccess, OpenWindowConfig, CoreWindowData, WindowHello, operations, WindowBoundsResult, WindowTitleConfig, WindowUrlResult, WindowMoveResizeConfig, WindowProjection, FocusEventData } from "./protocol";
 import {
     default as CallbackRegistryFactory,
     CallbackRegistry,
     UnsubscribeFunction,
 } from "callback-registry";
 import { IoC } from "../shared/ioc";
+import { systemOperations } from "../shared/systemOperations";
+import { PromisePlus } from "../shared/promise-plus";
 
 export class WindowsController implements LibController {
 
@@ -23,6 +25,7 @@ export class WindowsController implements LibController {
     private allWindowProjections: WindowProjection[] = [];
     private me!: Glue42Web.Windows.WebWindow;
     private logger!: Glue42Web.Logger.API;
+    private isWorkspaceFrame?: boolean;
 
     public async start(coreGlue: Glue42Core.GlueCore, ioc: IoC): Promise<void> {
 
@@ -43,6 +46,8 @@ export class WindowsController implements LibController {
         this.platformRegistration = this.registerWithPlatform();
 
         await this.platformRegistration;
+
+        await this.initializeFocusTracking();
 
         this.logger.trace("registration with the platform successful, attaching the windows property to glue and returning");
 
@@ -80,9 +85,7 @@ export class WindowsController implements LibController {
 
         const windowSuccess = await this.bridge.send<OpenWindowConfig, CoreWindowData>("windows", operations.openWindow, { name, url, options: settings });
 
-        const projection = await this.ioc.buildWebWindow(windowSuccess.windowId, windowSuccess.name);
-
-        return projection.api;
+        return this.waitForWindowAdded(windowSuccess.windowId);
     }
 
     private list(): Glue42Web.Windows.WebWindow[] {
@@ -102,11 +105,14 @@ export class WindowsController implements LibController {
             list: this.list.bind(this),
             findById: this.findById.bind(this),
             onWindowAdded: this.onWindowAdded.bind(this),
-            onWindowRemoved: this.onWindowRemoved.bind(this)
+            onWindowRemoved: this.onWindowRemoved.bind(this),
+            onWindowGotFocus: this.onWindowGotFocus.bind(this),
+            onWindowLostFocus: this.onWindowLostFocus.bind(this)
         };
     }
 
     private addWindowOperationExecutors(): void {
+        operations.focusChange.execute = this.handleFocusChangeEvent.bind(this);
         operations.windowAdded.execute = this.handleWindowAdded.bind(this);
         operations.windowRemoved.execute = this.handleWindowRemoved.bind(this);
         operations.getBounds.execute = this.handleGetBounds.bind(this);
@@ -137,6 +143,22 @@ export class WindowsController implements LibController {
         return this.registry.add("window-removed", callback);
     }
 
+    private onWindowGotFocus(callback: (window: Glue42Web.Windows.WebWindow) => void): UnsubscribeFunction {
+        if (typeof callback !== "function") {
+            throw new Error("Cannot subscribe to onWindowGotFocus, because the provided callback is not a function!");
+        }
+
+        return this.registry.add("window-got-focus", callback);
+    }
+
+    private onWindowLostFocus(callback: (window: Glue42Web.Windows.WebWindow) => void): UnsubscribeFunction {
+        if (typeof callback !== "function") {
+            throw new Error("Cannot subscribe to onWindowLostFocus, because the provided callback is not a function!");
+        }
+
+        return this.registry.add("window-lost-focus", callback);
+    }
+
     private async sayHello(): Promise<HelloSuccess> {
         const helloSuccess = await this.bridge.send<WindowHello, HelloSuccess>("windows", operations.windowHello, { windowId: this.actualWindowId });
 
@@ -147,9 +169,11 @@ export class WindowsController implements LibController {
 
         const { windows, isWorkspaceFrame } = await this.sayHello();
 
+        this.isWorkspaceFrame = isWorkspaceFrame;
+
         this.logger.trace("the platform responded to the hello message");
 
-        if (!isWorkspaceFrame) {
+        if (!this.isWorkspaceFrame) {
             this.logger.trace("i am not treated as a workspace frame, setting my window");
 
             const myWindow = windows.find((w) => w.windowId === this.publicWindowId);
@@ -158,14 +182,35 @@ export class WindowsController implements LibController {
                 throw new Error("Cannot initialize the window library, because I received no information about me from the platform");
             }
 
-            this.me = (await this.ioc.buildWebWindow(this.publicWindowId, myWindow.name)).api;
+            const myProjection = await this.ioc.buildWebWindow(this.publicWindowId, myWindow.name);
+
+            this.me = myProjection.api;
+
+            this.allWindowProjections.push(myProjection);
         }
 
-        const currentWindows = await Promise.all(windows.map((w) => this.ioc.buildWebWindow(w.windowId, w.name)));
+        const currentWindows = await Promise.all(windows
+            .filter((w) => w.windowId !== this.publicWindowId)
+            .map((w) => this.ioc.buildWebWindow(w.windowId, w.name))
+        );
 
         this.logger.trace("all windows projections are completed, building the list collection");
 
         this.allWindowProjections.push(...currentWindows);
+    }
+
+    private async handleFocusChangeEvent(focusData: FocusEventData): Promise<void> {
+        const foundProjection = this.allWindowProjections.find((projection) => projection.id === focusData.windowId);
+
+        if (!foundProjection) {
+            return;
+        }
+
+        foundProjection.model.processSelfFocusEvent(focusData.hasFocus);
+
+        const keyToExecute = focusData.hasFocus ? "window-got-focus" : "window-lost-focus";
+
+        this.registry.execute(keyToExecute, foundProjection.api);
     }
 
     private async handleWindowAdded(data: CoreWindowData): Promise<void> {
@@ -196,7 +241,7 @@ export class WindowsController implements LibController {
     private async handleGetBounds(): Promise<WindowBoundsResult> {
         // this.me is optional, because this handler responds to a workspace frame bounds request and the frame is not a regular GD window
         return {
-            windowId: this.me?.id,
+            windowId: this.isWorkspaceFrame ? "noop" : this.me.id,
             bounds: {
                 top: window.screenTop,
                 left: window.screenLeft,
@@ -243,5 +288,70 @@ export class WindowsController implements LibController {
 
     private async handleSetTitle(config: WindowTitleConfig): Promise<void> {
         document.title = config.title;
+    }
+
+    private async initializeFocusTracking(): Promise<void> {
+
+        if (this.isWorkspaceFrame) {
+            this.logger.trace("Ignoring the focus tracking, because this client is a workspace frame");
+            return;
+        }
+
+        try {
+            await this.bridge.send<OperationCheckConfig, OperationCheckResult>("windows", systemOperations.operationCheck, { operation: "focusChange" });
+        } catch (error) {
+            this.logger.warn(`The platform of this client is outdated and does not support focus tracking, disabling focus events for this client.`);
+            return;
+        }
+
+        const hasFocus = document.hasFocus();
+
+        // every window when opened gaines focus
+        await this.transmitFocusChange(true);
+
+        if (!hasFocus) {
+            // manual focus lost announce in case focus was lost while Web was initializing
+            await this.transmitFocusChange(false);
+        }
+
+        document.addEventListener("visibilityChange", this.processFocusEvent.bind(this));
+        window.addEventListener("focus", this.processFocusEvent.bind(this));
+        window.addEventListener("blur", this.processFocusEvent.bind(this));
+    }
+
+    private processFocusEvent(): void {
+        const hasFocus = document.hasFocus();
+
+        this.transmitFocusChange(hasFocus);
+    }
+
+    private waitForWindowAdded(windowId: string): Promise<Glue42Web.Windows.WebWindow> {
+
+        const foundWindow = this.allWindowProjections.find((projection) => projection.id === windowId);
+
+        if (foundWindow) {
+            return Promise.resolve(foundWindow.api);
+        }
+
+        return PromisePlus<Glue42Web.Windows.WebWindow>((resolve) => {
+            const unsubscribe = this.onWindowAdded((addedWindow) => {
+                if (addedWindow.id === windowId) {
+                    unsubscribe()
+                    resolve(addedWindow);
+                }
+            });
+        }, 30000, `Timed out waiting for ${windowId} to be announced`);
+    }
+
+    private async transmitFocusChange(hasFocus: boolean): Promise<void> {
+
+        const eventData: FocusEventData = {
+            windowId: this.me.id,
+            hasFocus
+        };
+
+        this.me.isFocused = hasFocus;
+        
+        await this.bridge.send<FocusEventData, void>("windows", operations.focusChange, eventData);
     }
 }
