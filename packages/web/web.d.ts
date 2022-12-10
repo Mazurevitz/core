@@ -1189,31 +1189,45 @@ export namespace Glue42Web {
             /**
              * Raises an intent, optionally passing context to the intent handlers, and optionally targeting specific intent handlers.
              * If no handlers are matching the targeting conditions the promise will be rejected.
-             * @param request can be the intent's name or an {@link IntentRequest} object carrying the intent, and its optional target, context and start options (see "startNew").
-             * @returns Promise that resolves with {@link IntentResult}.
+             * @param request can be the intent's name or an IntentRequest object carrying the intent, and its optional target, context and start options (see "startNew").
+             * @returns Promise that resolves with IntentResult.
              */
             raise(request: string | IntentRequest): Promise<IntentResult>;
 
             /**
-             * Returns all registered {@link Intent}.
+             * Returns all registered Intent.
              * @returns Promise that resolves with all registered intents.
              */
             all(): Promise<Intent[]>;
 
             /**
+             * @ignore
+             * @deprecated Use register() method instead
+             * 
              * If your application is an intent handler use this method to handle incoming intent requests.
              * Please note that when a new instance of your application is started as a result of a raised intent with e.g. `startNew` your application needs to call `addIntentListener()` on startup so that the intent can be resolved.
              * The handler callback will be invoked whenever an intent is raised and your app was selected as an IntentTarget.
              * You can also use this method to register new dynamic intents, that will have the the same lifespan as your application instance.
              * @param intent The intent to be handled. The intent name of an object containing the intent, contextTypes that the intent can handle and a display name.
-             * @param handler The callback that will handle a raised intent. Will be called with an {@link IntentContext} if it is provided by the raising application.
+             * @param handler The callback that will handle a raised intent. Will be called with an IntentContext if it is provided by the raising application.
              * @returns An object with an unsubscribe function under the unsubscribe property.
              */
-            addIntentListener(intent: string | AddIntentListenerRequest, handler: (context: IntentContext) => any): { unsubscribe: UnsubscribeFunction };
+            addIntentListener(intent: string | RegisterRequest, handler: (context: IntentContext) => any): { unsubscribe: UnsubscribeFunction };
+
+            /**
+             * If your application is an intent handler use this method to handle incoming intent requests.
+             * Please note that when a new instance of your application is started as a result of a raised intent with e.g. `startNew` your application needs to call `register()` on startup so that the intent can be resolved.
+             * The handler callback will be invoked whenever an intent is raised and your app was selected as an IntentTarget.
+             * You can also use this method to register new dynamic intents, that will have the the same lifespan as your application instance.
+             * @param intent The intent to be handled. The intent name of an object containing the intent, contextTypes that the intent can handle and a display name.
+             * @param handler The callback that will handle a raised intent. Will be called with an IntentContext if it is provided by the raising application.
+             * @returns Promise that resolves to an object with an unsubscribe function under the unsubscribe property.
+             */
+            register(intent: string | RegisterRequest, handler: (context: IntentContext) => any): Promise<{ unsubscribe: UnsubscribeFunction }>;
 
             /**
              * Searches for registered intents.
-             * @param intentFilter can be the intent name or a {@link IntentFilter} filtering criteria.
+             * @param intentFilter can be the intent name or a IntentFilter filtering criteria.
              * @returns Promise that resolves with the found intents that match the provided filtering criteria.
              */
             find(intentFilter?: string | IntentFilter): Promise<Intent[]>;
@@ -1251,12 +1265,12 @@ export namespace Glue42Web {
             intent: string;
 
             /**
-             * Notifies when a {@link ResolverIntentHandler} of the current intent is added. Replays the already existing handlers. 
+             * Notifies when a ResolverIntentHandler of the current intent is added. Replays the already existing handlers. 
              */
             onHandlerAdded(callback: (handler: ResolverIntentHandler) => void): UnsubscribeFunction;
 
             /**
-             * Notifies when a {@link ResolverIntentHandler} of the current intent is removed.
+             * Notifies when a ResolverIntentHandler of the current intent is removed.
              */
             onHandlerRemoved(callback: (removedHandler: ResolverIntentHandler) => void): UnsubscribeFunction;
 
@@ -1266,8 +1280,11 @@ export namespace Glue42Web {
             sendResponse(handler: ResolverIntentHandler): Promise<Glue42.Interop.InvocationResult | undefined>;
         }
 
-        /** Use to define dynamic intents, that will have the same lifespan as your application instance */
-        export interface AddIntentListenerRequest {
+        /**
+         * 
+         * Use to define dynamic intents, that will have the same lifespan as your application instance 
+         * */
+        export interface RegisterRequest {
             intent: string;
             contextTypes?: string[];
             displayName?: string;
@@ -1303,7 +1320,7 @@ export namespace Glue42Web {
              */
             name: string;
             /**
-             * The set of {@link IntentHandler} that provide an implementation for the intent and can be used to handle an intent request.
+             * The set of IntentHandler that provide an implementation for the intent and can be used to handle an intent request.
              */
             handlers: IntentHandler[];
         }

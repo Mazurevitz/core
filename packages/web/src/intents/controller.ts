@@ -5,7 +5,7 @@ import { IntentResolverResponse as IntentsResolverResponse, IntentsResolverStart
 import { Glue42Web } from "../../web";
 import { GlueBridge } from "../communication/bridge";
 import { UnsubscribeFunction } from "callback-registry";
-import { intentsOperationTypesDecoder, raiseRequestDecoder, findFilterDecoder, addIntentListenerIntentDecoder, intentResolverResponseDecoder } from "../shared/decoders";
+import { intentsOperationTypesDecoder, raiseRequestDecoder, findFilterDecoder, RegisterIntentDecoder, intentResolverResponseDecoder } from "../shared/decoders";
 import { IntentsResolverResponsePromise, operations, WrappedIntentFilter, WrappedIntents } from "./protocol";
 import { AppManagerController } from '../appManager/controller';
 import shortid from 'shortid';
@@ -25,6 +25,8 @@ export class IntentsController implements LibController {
 
     private windowsManager!: WindowsController;
     private intentsResolverResponsePromises: { [instanceId: string]: IntentsResolverResponsePromise } = {};
+
+    private unregisterIntentPromises: Promise<void>[] = [];
 
     public async start(coreGlue: Glue42Core.GlueCore, ioc: IoC): Promise<void> {
         this.logger = coreGlue.logger.subLogger("intents.controller.web");
@@ -71,6 +73,7 @@ export class IntentsController implements LibController {
             raise: this.raise.bind(this),
             all: this.all.bind(this),
             addIntentListener: this.addIntentListener.bind(this),
+            register: this.register.bind(this),
             find: this.find.bind(this)
         };
 
@@ -83,6 +86,8 @@ export class IntentsController implements LibController {
         const intent: Glue42Web.Intents.IntentRequest = typeof intentDecoder === "string"
             ? { intent: intentDecoder }
             : intentDecoder;
+
+        await Promise.all(this.unregisterIntentPromises);
 
         if (intent.target) {
             this.logger.trace(`Intents Resolver won't be used. Target is provided in Intent Request - ${JSON.stringify(intent)}`);
@@ -140,13 +145,15 @@ export class IntentsController implements LibController {
     }
 
     private async all(): Promise<Glue42Web.Intents.Intent[]> {
+        await Promise.all(this.unregisterIntentPromises);
+
         const result = await this.bridge.send<void, WrappedIntents>("intents", operations.getIntents, undefined);
 
         return result.intents;
     }
 
-    private addIntentListener(intent: string | Glue42Web.Intents.AddIntentListenerRequest, handler: (context: Glue42Web.Intents.IntentContext) => any): { unsubscribe: UnsubscribeFunction } {
-        addIntentListenerIntentDecoder.runWithException(intent);
+    private addIntentListener(intent: string | Glue42Web.Intents.RegisterRequest, handler: (context: Glue42Web.Intents.IntentContext) => any): { unsubscribe: UnsubscribeFunction } {
+        RegisterIntentDecoder.runWithException(intent);
         if (typeof handler !== "function") {
             throw new Error("Cannot add intent listener, because the provided handler is not a function!");
         }
@@ -155,7 +162,7 @@ export class IntentsController implements LibController {
 
         // `addIntentListener()` is sync.
         const intentName = typeof intent === "string" ? intent : intent.intent;
-        const methodName = `${GLUE42_FDC3_INTENTS_METHOD_PREFIX}${intentName}`;
+        const methodName = this.buildInteropMethodName(intentName);
 
         const alreadyRegistered = this.myIntents.has(intentName);
 
@@ -174,7 +181,7 @@ export class IntentsController implements LibController {
             }
         };
 
-        let intentFlag: Omit<Glue42Web.Intents.AddIntentListenerRequest, "intent"> = {};
+        let intentFlag: Omit<Glue42Web.Intents.RegisterRequest, "intent"> = {};
 
         if (typeof intent === "object") {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -197,6 +204,48 @@ export class IntentsController implements LibController {
         return result;
     }
 
+    private async register(intent: string | Glue42Web.Intents.RegisterRequest, handler: (context: Glue42Web.Intents.IntentContext) => any): Promise<{ unsubscribe: UnsubscribeFunction }> {
+        RegisterIntentDecoder.runWithException(intent);
+
+        if (typeof handler !== "function") {
+            throw new Error("Cannot add intent listener, because the provided handler is not a function!");
+        }
+
+        const intentName = typeof intent === "string" ? intent : intent.intent;
+        const methodName = this.buildInteropMethodName(intentName);
+
+        const alreadyRegistered = this.myIntents.has(intentName);
+
+        if (alreadyRegistered) {
+            throw new Error(`Intent listener for intent ${intentName} already registered!`);
+        }
+        this.myIntents.add(intentName);
+
+        let intentFlag: Omit<Glue42Web.Intents.RegisterRequest, "intent"> = {};
+
+        if (typeof intent === "object") {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { intent: removed, ...rest } = intent;
+            intentFlag = rest;
+        }
+
+        try {
+            await this.interop.register({ name: methodName, flags: { intent: intentFlag } }, (args: Glue42Web.Intents.IntentContext) => {
+                if (this.myIntents.has(intentName)) {
+                    return handler(args);
+                }
+            });
+        } catch (err) {
+            this.myIntents.delete(intentName);
+
+            throw new Error(`Registration of a method with name ${methodName} failed with reason: ${JSON.stringify(err)}`)
+        }
+
+        return {
+            unsubscribe: () => this.unsubscribeIntent(intentName)
+        };
+    }
+
     private async find(intentFilter?: string | Glue42Web.Intents.IntentFilter): Promise<Glue42Web.Intents.Intent[]> {
         let data: WrappedIntentFilter | undefined = undefined;
 
@@ -215,6 +264,8 @@ export class IntentsController implements LibController {
                 };
             }
         }
+
+        await Promise.all(this.unregisterIntentPromises);
 
         const result = await this.bridge.send<WrappedIntentFilter | undefined, WrappedIntents>("intents", operations.findIntent, data);
 
@@ -382,5 +433,34 @@ export class IntentsController implements LibController {
             : true;
 
         this.intentsResolverAppName = options.intents?.intentsResolverAppName ?? INTENTS_RESOLVER_APP_NAME;
+    }
+
+    private clearUnregistrationPromise(promiseToRemove: Promise<void>): void {
+        this.unregisterIntentPromises = this.unregisterIntentPromises.filter(promise => promise !== promiseToRemove);
+    }
+
+    private buildInteropMethodName(intentName: string): string {
+        return `${GLUE42_FDC3_INTENTS_METHOD_PREFIX}${intentName}`;
+    }
+
+    private unsubscribeIntent(intentName: string): void {
+        this.myIntents.delete(intentName);
+
+        const methodName = this.buildInteropMethodName(intentName);
+
+        // typings are wrong and mark unregister as a sync method
+        const unregisterPromise = this.interop.unregister(methodName) as unknown as Promise<void>;
+
+        this.unregisterIntentPromises.push(unregisterPromise);
+
+        unregisterPromise
+            .then(() => {
+                this.clearUnregistrationPromise(unregisterPromise);
+            })
+            .catch((err) => {
+                this.logger.error(`Unregistration of a method with name ${methodName} failed with reason: ${err}`)
+
+                this.clearUnregistrationPromise(unregisterPromise);
+            });
     }
 }

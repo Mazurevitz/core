@@ -55,7 +55,8 @@ export namespace Gtf {
         };
 
         intents: {
-            addIntentListener: (intent: string | Glue42Web.Intents.AddIntentListenerRequest) => Promise<ReturnType<Glue42Web.Intents.API['addIntentListener']>>;
+            addIntentListener: (intent: string | Glue42Web.Intents.RegisterRequest) => Promise<void>;
+            unregisterIntent: (intent: string | Glue42Web.Intents.RegisterRequest) => Promise<void>
         };
 
         stop(): Promise<void>;

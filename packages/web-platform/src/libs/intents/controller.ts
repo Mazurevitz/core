@@ -123,7 +123,7 @@ export class IntentsController implements LibController {
                     intents[intentName] = [];
                 }
 
-                const info = method.flags.intent as Omit<Glue42Web.Intents.AddIntentListenerRequest, "intent">;
+                const info = method.flags.intent as Omit<Glue42Web.Intents.RegisterRequest, "intent">;
 
                 const app = apps.find((appDef) => appDef.name === server.application);
                 let appIntent: IntentInfo | undefined;
