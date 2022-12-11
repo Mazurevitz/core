@@ -1,7 +1,6 @@
-2.12.0
-feat: added register intents method and deprecated addIntentListener
 2.11.0
 feat: added focusing events
+feat: added register intents method and deprecated addIntentListener
 2.10.3
 chore: bump due to dependencies update
 2.10.2
