@@ -1,3 +1,5 @@
+2.11.1
+fix: rename RegisterRequest to AddIntentListenerRequest in intents typings 
 2.11.0
 feat: added focusing events
 feat: added register intents method and deprecated addIntentListener

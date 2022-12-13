@@ -1,3 +1,5 @@
+1.18.1
+fix: rename RegisterRequest to AddIntentListenerRequest in intents typings 
 1.18.0
 feat: added support for focusing events
 1.17.4

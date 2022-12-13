@@ -1212,7 +1212,7 @@ export namespace Glue42Web {
              * @param handler The callback that will handle a raised intent. Will be called with an IntentContext if it is provided by the raising application.
              * @returns An object with an unsubscribe function under the unsubscribe property.
              */
-            addIntentListener(intent: string | RegisterRequest, handler: (context: IntentContext) => any): { unsubscribe: UnsubscribeFunction };
+            addIntentListener(intent: string | AddIntentListenerRequest, handler: (context: IntentContext) => any): { unsubscribe: UnsubscribeFunction };
 
             /**
              * If your application is an intent handler use this method to handle incoming intent requests.
@@ -1223,7 +1223,7 @@ export namespace Glue42Web {
              * @param handler The callback that will handle a raised intent. Will be called with an IntentContext if it is provided by the raising application.
              * @returns Promise that resolves to an object with an unsubscribe function under the unsubscribe property.
              */
-            register(intent: string | RegisterRequest, handler: (context: IntentContext) => any): Promise<{ unsubscribe: UnsubscribeFunction }>;
+            register(intent: string | AddIntentListenerRequest, handler: (context: IntentContext) => any): Promise<{ unsubscribe: UnsubscribeFunction }>;
 
             /**
              * Searches for registered intents.
@@ -1284,7 +1284,7 @@ export namespace Glue42Web {
          * 
          * Use to define dynamic intents, that will have the same lifespan as your application instance 
          * */
-        export interface RegisterRequest {
+        export interface AddIntentListenerRequest {
             intent: string;
             contextTypes?: string[];
             displayName?: string;

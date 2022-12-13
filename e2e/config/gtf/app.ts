@@ -162,7 +162,7 @@ export class GtfApp implements Gtf.App {
 
     public get intents() {
         return {
-            addIntentListener: (intent: string | Glue42Web.Intents.RegisterRequest): Promise<void> => {
+            addIntentListener: (intent: string | Glue42Web.Intents.AddIntentListenerRequest): Promise<void> => {
                 const controlArgs: ControlArgs = {
                     operation: 'addIntentListener',
                     params: {
@@ -172,7 +172,7 @@ export class GtfApp implements Gtf.App {
 
                 return this.sendControl<void>(controlArgs);
             },
-            unregisterIntent: (intent: string | Glue42Web.Intents.RegisterRequest): Promise<void> => {
+            unregisterIntent: (intent: string | Glue42Web.Intents.AddIntentListenerRequest): Promise<void> => {
                 const controlArgs: ControlArgs = {
                     operation: 'unregisterIntent',
                     params: {

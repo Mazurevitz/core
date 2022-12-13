@@ -5,7 +5,7 @@ import { IntentResolverResponse as IntentsResolverResponse, IntentsResolverStart
 import { Glue42Web } from "../../web";
 import { GlueBridge } from "../communication/bridge";
 import { UnsubscribeFunction } from "callback-registry";
-import { intentsOperationTypesDecoder, raiseRequestDecoder, findFilterDecoder, RegisterIntentDecoder, intentResolverResponseDecoder } from "../shared/decoders";
+import { intentsOperationTypesDecoder, raiseRequestDecoder, findFilterDecoder, AddIntentListenerDecoder, intentResolverResponseDecoder } from "../shared/decoders";
 import { IntentsResolverResponsePromise, operations, WrappedIntentFilter, WrappedIntents } from "./protocol";
 import { AppManagerController } from '../appManager/controller';
 import shortid from 'shortid';
@@ -152,8 +152,8 @@ export class IntentsController implements LibController {
         return result.intents;
     }
 
-    private addIntentListener(intent: string | Glue42Web.Intents.RegisterRequest, handler: (context: Glue42Web.Intents.IntentContext) => any): { unsubscribe: UnsubscribeFunction } {
-        RegisterIntentDecoder.runWithException(intent);
+    private addIntentListener(intent: string | Glue42Web.Intents.AddIntentListenerRequest, handler: (context: Glue42Web.Intents.IntentContext) => any): { unsubscribe: UnsubscribeFunction } {
+        AddIntentListenerDecoder.runWithException(intent);
         if (typeof handler !== "function") {
             throw new Error("Cannot add intent listener, because the provided handler is not a function!");
         }
@@ -181,7 +181,7 @@ export class IntentsController implements LibController {
             }
         };
 
-        let intentFlag: Omit<Glue42Web.Intents.RegisterRequest, "intent"> = {};
+        let intentFlag: Omit<Glue42Web.Intents.AddIntentListenerRequest, "intent"> = {};
 
         if (typeof intent === "object") {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -204,12 +204,14 @@ export class IntentsController implements LibController {
         return result;
     }
 
-    private async register(intent: string | Glue42Web.Intents.RegisterRequest, handler: (context: Glue42Web.Intents.IntentContext) => any): Promise<{ unsubscribe: UnsubscribeFunction }> {
-        RegisterIntentDecoder.runWithException(intent);
+    private async register(intent: string | Glue42Web.Intents.AddIntentListenerRequest, handler: (context: Glue42Web.Intents.IntentContext) => any): Promise<{ unsubscribe: UnsubscribeFunction }> {
+        AddIntentListenerDecoder.runWithException(intent);
 
         if (typeof handler !== "function") {
             throw new Error("Cannot add intent listener, because the provided handler is not a function!");
         }
+
+        await Promise.all(this.unregisterIntentPromises);
 
         const intentName = typeof intent === "string" ? intent : intent.intent;
         const methodName = this.buildInteropMethodName(intentName);
@@ -221,7 +223,7 @@ export class IntentsController implements LibController {
         }
         this.myIntents.add(intentName);
 
-        let intentFlag: Omit<Glue42Web.Intents.RegisterRequest, "intent"> = {};
+        let intentFlag: Omit<Glue42Web.Intents.AddIntentListenerRequest, "intent"> = {};
 
         if (typeof intent === "object") {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars

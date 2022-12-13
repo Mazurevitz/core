@@ -576,7 +576,7 @@ export const intentResultDecoder: Decoder<Glue42Web.Intents.IntentResult> = obje
     result: anyJson()
 });
 
-export const registerRequestDecoder: Decoder<Glue42Web.Intents.RegisterRequest> = object({
+export const AddIntentListenerRequestDecoder: Decoder<Glue42Web.Intents.AddIntentListenerRequest> = object({
     intent: nonEmptyStringDecoder,
     contextTypes: optional(array(nonEmptyStringDecoder)),
     displayName: optional(string()),
@@ -585,9 +585,9 @@ export const registerRequestDecoder: Decoder<Glue42Web.Intents.RegisterRequest> 
     resultType: optional(string())
 });
 
-export const RegisterIntentDecoder: Decoder<string | Glue42Web.Intents.RegisterRequest> = oneOf<string | Glue42Web.Intents.RegisterRequest>(
+export const AddIntentListenerDecoder: Decoder<string | Glue42Web.Intents.AddIntentListenerRequest> = oneOf<string | Glue42Web.Intents.AddIntentListenerRequest>(
     nonEmptyStringDecoder,
-    registerRequestDecoder
+    AddIntentListenerRequestDecoder
 );
 
 export const channelNameDecoder = (channelNames: string[]): Decoder<string> => {
