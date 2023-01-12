@@ -1,3 +1,5 @@
+1.18.2
+fix: setting the initial context for an instance or a window now verifies that any existing context with that name is destroyed first 
 1.18.1
 fix: rename RegisterRequest to AddIntentListenerRequest in intents typings 
 1.18.0
