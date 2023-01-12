@@ -1,3 +1,5 @@
+1.18.2
+chore: bump due to dependencies update
 1.18.1
 fix: layouts import in Enterprise price is now reverted back to operating on top of the bridge protocol
 1.18.0
