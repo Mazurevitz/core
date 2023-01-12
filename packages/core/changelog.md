@@ -1,3 +1,5 @@
+5.7.10
+chore: added missing changelog to the published bundle
 5.7.9
 chore: updated rollup build to use a clean dist dir
 5.7.8
