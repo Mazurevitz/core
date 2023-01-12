@@ -28,7 +28,7 @@ export class PlatformController {
         private readonly preferredConnectionController: PreferredConnectionController,
         private readonly interceptionController: InterceptionController,
         private readonly pluginsController: PluginsController
-    ) { }
+    ) {}
 
     private get logger(): Glue42Web.Logger.API | undefined {
         return logger.get("main.web.platform");
@@ -126,7 +126,10 @@ export class PlatformController {
 
             return result;
         } catch (error: any) {
-            const stringError = typeof error === "string" ? error : JSON.stringify(error.message);
+            const stringError = typeof error === "string" ?
+                error :
+                error.message ? JSON.stringify(error.message) :
+                    JSON.stringify(error);
 
             this.logger?.trace(`[${controlMessage.commandId}] this command's execution was rejected, reason: ${stringError}`);
 

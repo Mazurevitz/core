@@ -27,7 +27,7 @@ export class GlueController {
     constructor(
         private readonly portsBridge: PortsBridge,
         private readonly sessionStorage: SessionStorageController
-    ) { }
+    ) {}
 
     public get platformVersion(): string {
         return version;
@@ -177,19 +177,50 @@ export class GlueController {
         return PromisePlus((resolve, reject) => {
             let unsub: () => void;
 
-            const ready = waitFor(3, () => {
+            const ready = waitFor(2, () => {
                 resolve();
                 unsub();
             });
             const key = `___${type}___${windowId}`;
 
-            this._clientGlue.contexts.subscribe(key, ready)
+            const waitContextDestroy = this._clientGlue.contexts.all().some((ctx) => ctx === key) ?
+                this.waitContextDestroy(key) :
+                Promise.resolve();
+
+            waitContextDestroy
+                .then(() => this._clientGlue.contexts.subscribe(key, ready))
                 .then((un) => {
                     unsub = un;
-                    ready();
-                });
-            this._systemGlue.contexts.set(key, context).then(ready).catch(reject);
+                    return this._systemGlue.contexts.set(key, context);
+                })
+                .then(ready)
+                .catch(reject);
         }, 10000, `Timed out waiting to set the ${type} context for: ${windowId}`);
+    }
+
+    public waitContextDestroy(contextName: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+
+            let contextChecks = 0;
+
+            const interval = setInterval(() => {
+                const contextExists = this._clientGlue.contexts.all().some((ctx) => ctx === contextName);
+                ++contextChecks;
+
+                if (!contextExists) {
+                    clearInterval(interval);
+                    resolve();
+                    return;
+                }
+
+                if (contextChecks === 50) {
+                    clearInterval(interval);
+                    reject(`Timed out waiting for context: ${contextName} to disappear`);
+                }
+
+            }, 100);
+
+        });
     }
 
     public async clearContext(windowId: string, type: "workspace" | "instance" | "window"): Promise<void> {

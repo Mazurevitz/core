@@ -200,7 +200,9 @@ export class LayoutsController implements LibController {
 
         const myWindow = this.windowsController.my();
 
-        if (myWindow.name !== "Platform") {
+        const amIWorkspaceFrame = (window as any).glue42core.isPlatformFrame;
+
+        if (myWindow.name !== "Platform" && !amIWorkspaceFrame) {
             throw new Error("Cannot request permission for multi-window placement from any app other than the Platform.");
         }
 

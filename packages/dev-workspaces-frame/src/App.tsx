@@ -5,7 +5,7 @@ import "@glue42/workspaces-ui-react/dist/styles/goldenlayout-base.css";
 import "@glue42/workspaces-ui-react/dist/styles/glue42-theme.css";
 import "@glue42/workspaces-ui-react/dist/styles/workspaceTabV2.css";
 import "./index.css";
-// import { GlueContext } from '@glue42/react-hooks';
+// import { GlueContext, useGlue } from '@glue42/react-hooks';
 // import { Glue42Workspaces } from '@glue42/workspaces-api';
 // import { Glue42Web } from "@glue42/web";
 // import { Glue42 } from "@glue42/desktop";
@@ -41,6 +41,7 @@ const App = () => {
 //     };
 
 //     useGlue(async (glue) => {
+//         (window as any).glue = glue;
 //         const myFrame = await waitForMyFrame(glue as any);
 //         const wsp = (await myFrame.workspaces())[0];
 //         const newWsp = await glue.workspaces?.restoreWorkspace("example2", {title: "example2", reuseWorkspaceId: wsp.id} as any);
