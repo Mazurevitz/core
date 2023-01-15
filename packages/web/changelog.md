@@ -1,3 +1,5 @@
+2.11.3
+fix: refactored the intents resolver spawn bounds function to fix an error fired when a minified platform is used and minified again by webpack 
 2.11.2
 fix: requesting multi display window placement from a platform which is a workspace frame now works correctly
 2.11.1

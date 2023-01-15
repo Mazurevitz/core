@@ -275,8 +275,8 @@ export class IntentsController implements LibController {
     }
 
     private createResponsePromise(intent: string, instanceId: string, methodName: string): void {
-        let resolve: (arg: IntentsResolverResponse) => void = () => { };
-        let reject: (reason: string) => void = () => { };
+        let resolve: (arg: IntentsResolverResponse) => void = () => {};
+        let reject: (reason: string) => void = () => {};
 
         const promise = new Promise<IntentsResolverResponse>((res, rej) => {
             resolve = res;
@@ -369,42 +369,52 @@ export class IntentsController implements LibController {
     }
 
     private async getTargetBounds(): Promise<Glue42Web.Windows.Bounds> {
-        let bounds: Glue42Web.Windows.Bounds;
+        const bounds = await this.tryGetWindowBasedBounds() || await this.tryGetWorkspaceBasedBounds();
 
-        try {
-            bounds = await this.windowsManager.my().getBounds();
-
-            this.logger.trace(`Opening the resolver UI relative to my window bounds: ${JSON.stringify(bounds)}`);
-
+        if (bounds) {
             return bounds;
-        } catch (error) {
-            this.logger.trace(`Failure to get my window bounds: ${JSON.stringify(error)}`);
         }
 
-        try {
-            await this.bridge.send<OperationCheckConfig, OperationCheckResult>("workspaces" as LibDomains, systemOperations.operationCheck, { operation: "getWorkspaceWindowFrameBounds" });
-
-            const bridgeResponse = await this.bridge.send<SimpleItemIdRequest, WorkspaceFrameBoundsResult>("workspaces" as LibDomains, systemOperations.getWorkspaceWindowFrameBounds, { itemId: this.windowsManager.my().id });
-
-            bounds = bridgeResponse.bounds;
-
-            this.logger.trace(`Opening the resolver UI relative to my workspace frame window bounds: ${JSON.stringify(bounds)}`);
-
-            return bounds;
-        } catch (error) {
-            this.logger.trace(`Failure to get my workspace frame window bounds: ${JSON.stringify(error)}`);
-        }
-
-        bounds = {
+        const defaultBounds: Glue42Web.Windows.Bounds = {
             top: (window as any).screen.availTop || 0,
             left: (window as any).screen.availLeft || 0,
             width: window.screen.width,
             height: window.screen.height
         };
 
-        this.logger.trace(`Opening the resolver UI relative to my screen bounds: ${JSON.stringify(bounds)}`);
+        this.logger.trace(`Opening the resolver UI relative to my screen bounds: ${JSON.stringify(defaultBounds)}`);
 
-        return bounds;
+        return defaultBounds;
+    }
+
+    private async tryGetWindowBasedBounds(): Promise<Glue42Web.Windows.Bounds | undefined> {
+        try {
+            const myWindowBounds = await this.windowsManager.my().getBounds();
+
+            this.logger.trace(`Opening the resolver UI relative to my window bounds: ${JSON.stringify(myWindowBounds)}`);
+
+            return myWindowBounds;
+        } catch (error) {
+            this.logger.trace(`Failure to get my window bounds: ${JSON.stringify(error)}`);
+        }
+
+    }
+
+    private async tryGetWorkspaceBasedBounds(): Promise<Glue42Web.Windows.Bounds | undefined> {
+        try {
+            await this.bridge.send<OperationCheckConfig, OperationCheckResult>("workspaces" as LibDomains, systemOperations.operationCheck, { operation: "getWorkspaceWindowFrameBounds" });
+
+            const bridgeResponse = await this.bridge.send<SimpleItemIdRequest, WorkspaceFrameBoundsResult>("workspaces" as LibDomains, systemOperations.getWorkspaceWindowFrameBounds, { itemId: this.windowsManager.my().id });
+
+            const myWorkspaceBounds = bridgeResponse.bounds;
+
+            this.logger.trace(`Opening the resolver UI relative to my workspace frame window bounds: ${JSON.stringify(myWorkspaceBounds)}`);
+
+            return myWorkspaceBounds;
+        } catch (error) {
+            this.logger.trace(`Failure to get my workspace frame window bounds: ${JSON.stringify(error)}`);
+        }
+
     }
 
     private subscribeOnInstanceStopped(instance: Glue42Web.AppManager.Instance): void {
