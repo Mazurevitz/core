@@ -1,3 +1,5 @@
+1.18.3
+chore: fixes the issue with react building core+ for production due to web package intents resolver positioning func
 1.18.2
 fix: setting the initial context for an instance or a window now verifies that any existing context with that name is destroyed first 
 1.18.1
