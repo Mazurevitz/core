@@ -13,7 +13,7 @@ You are a part of the IT department of a big multi-national bank and you have be
 
 All apps are being developed by different teams within the organizations and therefore are being hosted at different origins.
 
-As an end result, the users want to be able to run two apps as Progressive Web Apps in separate windows in order to take advantage of their multi-monitor setups. Also, they want the apps, even though in separate windows, to be able to communicate with each other. For example, when a client is selected in the **Clients** app, the **Stocks** app should display only the stocks of the selected client.
+As an end result, the users want to be able to run the apps as Progressive Web Apps in separate windows in order to take advantage of their multi-monitor setups. Also, they want the apps, even though in separate windows, to be able to communicate with each other. For example, when a client is selected in the **Clients** app, the **Stocks** app should display only the stocks of the selected client.
 
 ## Prerequisites
 
@@ -65,14 +65,14 @@ The `/start` directory contains the following:
 
 | Directory | Description |
 |-----------|-------------|
-| `/clients` | This is the **Clients** app.  The directory contains everything necessary for this app to be a standalone PWA:  an `index.html` file, a script file, a `manifest.json` file, `lib` directory, `assets` directory, a `service-worker.js` and a favicon. |
-| `/stocks` | This is the **Stocks** app. The directory contains everything necessary for this app to be a standalone PWA:  an `index.html` file, a script file, a `manifest.json` file, `lib` directory, `assets` directory, a `service-worker.js` and a favicon. It also contains a **Stock Details** view in the `/stock/details` directory. |
-| `/client-details` | This is the **Client Details** app which will be used later in the tutorial (in the [Workspaces](#9_workspaces) chapter) to display detailed information about a selected client. The directory contains everything necessary for this app to be a standalone PWA:  an `index.html` file, a script file, a `manifest.json` file, `lib` directory, `assets` directory, a `service-worker.js` and a favicon. |
+| `/clients` | This is the **Clients** app.  The directory contains everything necessary for this app to be a standalone PWA:  an `index.html` file, a script file, a `manifest.json` file, `/lib` directory, `/assets` directory, a `service-worker.js` and a favicon. Also contains a `/plugins` directory with Glue42 [Plugins](../../capabilities/plugins/index.html) that will be used in the [Plugins](#8_plugins) chapter. |
+| `/stocks` | This is the **Stocks** app. The directory contains everything necessary for this app to be a standalone PWA:  an `index.html` file, a script file, a `manifest.json` file, `/lib` directory, `/assets` directory, a `service-worker.js` and a favicon. It also contains a **Stock Details** view in the `/stock/details` directory. |
+| `/client-details` | This is the **Client Details** app which will be used later in the tutorial (in the [Workspaces](#9_workspaces) chapter) to display detailed information about a selected client. The directory contains everything necessary for this app to be a standalone PWA:  an `index.html` file, a script file, a `manifest.json` file, `/lib` directory, `/assets` directory, a `service-worker.js` and a favicon. |
 | `/portfolio-downloader` | This is the **Portfolio Downloader** app, which will be used in the [Intents](#10_intents) chapter.  |
 | `/workspace` | This is a **Workspaces App**, which will be used in the [Workspaces](#9_workspaces) chapter. |
 | `package.json` | Standard `package.json` file. |
 
-All three apps are fully functional. To run them, execute the following commands:
+All apps are fully functional. To run them, execute the following commands:
 
 ```cmd
 npm install
@@ -81,8 +81,8 @@ npm start
 
 This will install the necessary dependencies and launch separate servers hosting all apps as follows:
 
-| URL | Application |
-|-----|-------------|
+| URL | App |
+|-----|-----|
 | `http://localhost:9000/` | **Clients** |
 | `http://localhost:9100/` | **Stocks** |
 | `http://localhost:9200/` | **Client Details** |
@@ -93,7 +93,7 @@ This will install the necessary dependencies and launch separate servers hosting
 
 Before you continue, take a look at the solution files. You are free to use the solution as you like - you can check after each section to see how it solves the problem, or you can use it as a reference point in case you get stuck.
 
-Go to the `/rest-server` directory and start the REST Server (as described in the [REST Server](#initial_setup-13_rest_server) chapter). Go to the `/javascript/solution` directory, open a command prompt and run the following commands to install the necessary dependencies and run the project:
+Go to the `/rest-server` directory and start the REST Server (as described in the [REST Server](#1_initial_setup-13_rest_server) chapter). Go to the `/javascript/solution` directory, open a command prompt and run the following commands to install the necessary dependencies and run the project:
 
 ```cmd
 npm install
@@ -119,15 +119,15 @@ This will launch the server at port 8080.
 
 Every [**Glue42 Core**](https://glue42.com/core/) project must have a single central app called [Main app](../../developers/core-concepts/web-platform/overview/index.html) or Web Platform app. In a real-life scenario this would be an app used for discovering and listing available apps, Workspaces, handling notifications and much more. However, your goal now is to learn about all these aspects with as little complexity as possible. That's why the **Clients** app will serve as your Main app. The users will open the **Clients** app and from there they will be able to click on a client and see their stocks and so on.
 
-Setting up a Main app is just as simple as calling a function. First, reference the Glue42 [Web Platform](https://www.npmjs.com/package/@glue42/web-platform) script in the **Clients** app and then initialize the library. The [Web Platform](https://www.npmjs.com/package/@glue42/web-platform) library handles the entire Glue42 environment, which is necessary for the [Web Client](../../developers/core-concepts/web-client/overview/index.html) apps to be able to connect to the Main app and to each other.
+Setting up a Main app is as simple as calling a function. First, reference the [@glue42/web-platform](https://www.npmjs.com/package/@glue42/web-platform) script in the **Clients** app and then initialize the library. The Web Platform library handles the entire Glue42 environment, which is necessary for the [Web Client](../../developers/core-concepts/web-client/overview/index.html) apps to be able to connect to the Main app and to each other.
 
-Open the `index.html` of the **Clients** app, add a new `<script>` tag below the `TODO: Chapter 2` comment and reference the Glue42 [Web Platform](https://www.npmjs.com/package/@glue42/web-platform) script from the `/clients/lib` directory:
+Open the `index.html` of the **Clients** app, add a new `<script>` tag below the `TODO: Chapter 2` comment and reference the [@glue42/web-platform](https://www.npmjs.com/package/@glue42/web-platform) script from the `/clients/lib` directory:
 
 ```html
 <script src="/lib/platform.web.umd.js"></script>
 ```
 
-Next, open the `index.js` file of the **Clients** app and find the `TODO: Chapter 2` comment inside the `start()` function. [Initialize](../../developers/core-concepts/web-platform/setup/index.html#initialization) the [Web Platform](https://www.npmjs.com/package/@glue42/web-platform) library by using the `GlueWebPlatform()` factory function attached to the global `window` object. Assign the `glue` property of the returned object as a property of the global `window` object for easy use later:
+Next, open the `index.js` file of the **Clients** app and find the `TODO: Chapter 2` comment inside the `start()` function. [Initialize](../../developers/core-concepts/web-platform/setup/index.html#initialization) the [@glue42/web-platform](https://www.npmjs.com/package/@glue42/web-platform) library by using the `GlueWebPlatform()` factory function attached to the global `window` object. Assign the `glue` property of the returned object as a property of the global `window` object for easy use later:
 
 ```javascript
 // In `start()`.
@@ -177,7 +177,7 @@ Find the `toggleGlueAvailable()` function marked with a `TODO: Chapter 2` commen
 toggleGlueAvailable();
 ```
 
-*Note that when you refresh these apps, you will see that the Glue42 initialization is unsuccessful. This is because they cannot currently connect to the Glue42 environment provided by the [Main app](../../developers/core-concepts/web-platform/overview/index.html) and therefore cannot discover the Main app or each other. To be able to connect to Glue42, all [Web Client](../../developers/core-concepts/web-client/overview/index.html) apps must be opened by the [Web Platform app](../../developers/core-concepts/web-platform/overview/index.html)) or by another [Web Client](../../developers/core-concepts/web-client/overview/index.html) app already connected to the Glue42 environment.*
+*Note that when you refresh these apps, you will see that the Glue42 initialization is unsuccessful. This is because they can't currently connect to the Glue42 environment provided by the [Main app](../../developers/core-concepts/web-platform/overview/index.html) and therefore can't discover the Main app or each other. To be able to initialize the [Glue42 Web](../../reference/core/latest/glue42%20web/index.html) library, all [Web Client](../../developers/core-concepts/web-client/overview/index.html) apps must be started through the [Main app](../../developers/core-concepts/web-platform/overview/index.html) or by another [Web Client](../../developers/core-concepts/web-client/overview/index.html) app already connected to the Glue42 environment.*
 
 To verify that the initializations are correct, open the browser console of the **Clients** app (press `F12`) and execute the following:
 
@@ -211,6 +211,9 @@ const stocksButtonHandler = (client) => {
     glue.windows.open(name, URL).catch(console.error);
 };
 ```
+
+
+Clicking on the "Stocks" button will now open the **Stocks** app.
 
 To complete the user flow, instruct the **Stocks** app to open a new window each time a the user clicks on a stock. Remember that each Glue42 Window must have a unique name. To avoid errors resulting from attempting to open Glue42 Windows with conflicting names, check whether the clicked stock has already been opened in a new window.
 
@@ -294,17 +297,21 @@ const myWindow = glue.windows.my();
 const stock = await myWindow.getContext();
 ```
 
+Now, when you click on a stock in the **Stocks** app, the **Stock Details** app will open in a new window displaying information about the selected stock.
+
 ## 4. Interop
 
 Now, you will use the [Interop API](../../reference/core/latest/interop/index.html) to pass the portfolio of the selected client to the **Stocks** app and show only the stocks present in their portfolio.
 
 *See also the [Capabilities > Data Sharing Between Apps > Interop](../../capabilities/data-sharing-between-apps/interop/index.html) documentation.*
 
-### 4.1. Registering Interop Methods and Streams
+### 4.1. Registering Interop Methods and Creating Streams
 
 When a user clicks on a client, the **Stocks** app should show only the stocks owned by this client. You can achieve this by registering an Interop method in the **Stocks** app which, when invoked, will receive the portfolio of the selected client and re-render the stocks table. Also, the **Stocks** app will create an Interop stream to which it will push the new stock prices. Subscribers to the stream will get notified when new prices have been generated.
 
-Go to the **Stocks** app and find the `TODO: Chapter 4.1` comment in the `start()` function. Use the [`register()`](../../reference/core/latest/interop/index.html#API-register) method to register an Interop method. Pass a method name (`"SelectClient"`) and a callback for handling method invocations to `register()`. The callback will expect as an argument an object with a `client` property, which in turn holds an object with a `portfolio` property. Filter all stocks and pass only the ones present in the portfolio of the client to the `setupStocks()` function. After that, use [`createStream()`](../../reference/core/latest/interop/index.html#API-createStream) to create a stream called `"LivePrices"` and assign it to the global `window` object for easy access:
+Go to the **Stocks** app and find the `TODO: Chapter 4.1` comment in the `start()` function. Use the [`register()`](../../reference/core/latest/interop/index.html#API-register) method to register an Interop method. Pass a method name (`"SelectClient"`) and a callback for handling method invocations to `register()`. The callback will expect as an argument an object with a `client` property, which in turn holds an object with a `portfolio` property. Filter all stocks and pass only the ones present in the portfolio of the client to the `setupStocks()` function.
+
+Streams can be described as special Interop methods. Use the [`createStream()`](../../reference/core/latest/interop/index.html#API-createStream) method to create a stream called `"LivePrices"` and assign it to the global `window` object for easy access:
 
 ```javascript
 // In `start()`.
@@ -365,9 +372,9 @@ const selectClientStocks = glue.interop.methods().find(method => method.name ===
 
 ### 4.3. Method Invocation
 
-Next, invoke the `"SelectClient"` Interop method if present.
+Next, invoke the Interop method if it has been registered.
 
-Find the `TODO: Chapter 4.3.` comment and invoke the method if it has been registered. Use [`invoke()`](../../reference/core/latest/interop/index.html#API-invoke) and pass the previously found method object to it as a first argument. Wrap the `client` object received by the `clientClickedHandler()` in another object and pass it as a second argument to [`invoke()`](../../reference/core/latest/interop/index.html#API-invoke):
+Find the `TODO: Chapter 4.3.` comment and invoke the method if it has been registered. Use the [`invoke()`](../../reference/core/latest/interop/index.html#API-invoke) method and pass the previously found method object to it as a first argument. Wrap the `client` object received by the `clientClickedHandler()` in another object and pass it as a second argument to [`invoke()`](../../reference/core/latest/interop/index.html#API-invoke):
 
 ```javascript
 // In `clientClickedHandler()`.
@@ -390,9 +397,11 @@ const clientClickedHandler = (client) => {
 };
 ```
 
+Now, when you click on a client in the **Clients** app, the **Stocks** app will display only the stocks that are in the portfolio of the selected client.
+
 ### 4.4. Stream Subscription
 
-Use the [Interop API](../../reference/core/latest/interop/index.html) to subscribe the **Stock Details** app to the previously created `"LivePrices"` stream.
+Use the [Interop API](../../reference/core/latest/interop/index.html) to subscribe the **Stock Details** app to the previously created Interop stream.
 
 Go to the **Stock Details** app and find the `TODO: Chapter 4.4` comment in the `start()` function. Use the [`subscribe()`](../../reference/core/latest/interop/index.html#API-subscribe) method to subscribe to the `"LivePrices"` stream and use the [`onData()`](../../reference/core/latest/interop/index.html#Subscription-onData) method of the returned subscription object to assign a handler for the received stream data:
 
@@ -467,7 +476,7 @@ const updateHandler = (client) => {
 glue.contexts.subscribe("SelectedClient", updateHandler);
 ```
 
-Now the **Stock Details** app will show whether the client selected from the **Clients** app has the the displayed stock in their portfolio.
+Now, the **Stock Details** app will show whether the client selected from the **Clients** app has the the displayed stock in their portfolio.
 
 ## 6. Channels
 
@@ -556,11 +565,11 @@ const { glue } = await GlueWebPlatform(config);
 window.glue = glue;
 ```
 
-When **Clients** starts, the defined Channels will be initialized and ready for interaction.
+When the **Clients** app starts, the defined Channels will be initialized and ready for interaction.
 
 ### 6.2. Channel Selector Widget
 
-The users have to be able to navigate through the Channels for which they will need some sort of user interface. You can create your own Channel selector widget by using the Channels API, but for the purpose of the tutorial, there is a jQuery Channel widget included. To add it to the **Clients** and **Stocks** apps, follow these steps:
+The users have to be able to navigate through the Channels for which they will need some sort of user interface. You can create your own Channel selector widget by using the Channels API, but for the purpose of the tutorial, the widget is provided. To add it to the **Clients** and **Stocks** apps, follow these steps:
 
 1. Go to the `index.html` files of both apps and find the `TODO: Chapter 6.2` comments in the `<head>` tag. Reference the `channelSelectorWidget.js` file located in the `/lib` folder:
 
@@ -633,7 +642,9 @@ Refresh both apps to see the Channel selector widget.
 
 ### 6.3. Publishing and Subscribing
 
-Find the `TODO: Chapter 6.3.` comment in the `clientClickedHandler()` function of the **Clients** app. Use the [`publish()`](../../reference/core/latest/channels/index.html#API-publish) method and pass the selected client as an argument to update the Channel context when a new client is selected. Note that `publish()` will throw an error if the app tries to publish data but isn't on a Channel. Use the `my()` method to check for the current Channel:
+Next, you need to enable the **Clients** app to publish updates to the current Channel context and the **Stocks** app to subscribe for these updates.
+
+Find the `TODO: Chapter 6.3.` comment in the `clientClickedHandler()` function of the **Clients** app. Use the [`publish()`](../../reference/core/latest/channels/index.html#API-publish) method and pass the selected client as an argument to update the Channel context when a new client is selected. Note that `publish()` will throw an error if the app tries to publish data but isn't on a Channel. Use the [`my()`](../../reference/core/latest/channels/index.html#API-my) method to check for the current Channel:
 
 ```javascript
 // In `clientClickedHandler()`.
@@ -727,7 +738,7 @@ The `name` and `url` properties are required when defining an app configuration 
 
 ### 7.2. Starting Apps
 
-Go the the **Clients** app and remove the code in the `stocksButtonHandler()` using the Window Management API (including the code related to the `counter` and `instanceID` variable, as it won't be necessary to create unique window names). Find the `TODO: Chapter 7.2` comment, get the **Stocks** app object with the [`application()`](../../reference/core/latest/appmanager/index.html#API-application) method and use its [`start()`](../../reference/core/latest/appmanager/index.html#Application-start) method to start the **Stocks** app when the user clicks the "Stocks" button. Pass the current Channel as a context to the started instance:
+Go the the **Clients** app and remove the code in the `stocksButtonHandler()` using the Window Management API (including the code related to the `counter` and `instanceID` variable, as it won't be necessary to create unique window names). Find the `TODO: Chapter 7.2` comment, get the **Stocks** app object with the [`application()`](../../reference/core/latest/appmanager/index.html#API-application) method and use its [`start()`](../../reference/core/latest/appmanager/index.html#Application-start) method to start the **Stocks** app when the user clicks the "Stocks" button. Pass the current Channel as context to the started instance:
 
 ```javascript
 // In `stocksButtonHandler()`.
@@ -757,7 +768,7 @@ This, however, won't re-render the Channel selector widget in the **Stocks** app
 // In `start()`.
 
 // The `createChannelSelectorWidget()` function returns a function which
-// accepts the new Channel name as a parameter and updates the widget.
+// accepts the new Channel name as an argument and updates the widget.
 const updateChannelSelectorWidget = createChannelSelectorWidget(
     NO_CHANNEL_VALUE,
     channelNamesAndColors,
@@ -775,7 +786,7 @@ glue.channels.onChanged(handleChannelChanges);
 
 ### 7.3. App Instances
 
-Finally, find the `TODO: Chapter 7.3` comment in the `stockClickedHandler()`. Comment out or delete the code that uses the Window Management API to open the **Stock Details** app. Use the [`application()`](../../reference/core/latest/appmanager/index.html#API-application) method to get the **Stock Details** app. Check whether an instance with the selected stock has already been started by iterating over the contexts of the existing **Stock Details** instances. If there is no instance with the selected stock, call the `start()` method on the application object and pass the selected stock as a context:
+Finally, find the `TODO: Chapter 7.3` comment in the `stockClickedHandler()`. Comment out or delete the code that uses the Window Management API to open the **Stock Details** app. Use the [`application()`](../../reference/core/latest/appmanager/index.html#API-application) method to get the **Stock Details** app. Check whether an instance with the selected stock has already been started by iterating over the contexts of the existing **Stock Details** instances. If there is no instance with the selected stock, call the `start()` method on the app object and pass the selected stock as a context:
 
 ```javascript
 // In `stockClickedHandler()`.
@@ -807,7 +818,7 @@ Everything works as before, the difference being that the apps now use the App M
 
 ## 8. Plugins
 
-The developer team has decided against hard coding app definitions, as in practice it's more scalable to fetch them from a web service. The Glue42 [Plugins](../../capabilities/plugins/index.html) allow you to execute initial system logic contained in a custom function with access to the `glue` object. You can also configure the [Main app](../../developers/core-concepts/web-platform/overview/index.html) whether to wait for the execution of the Plugin to complete before initialization. This will enable you to fetch and import the app definitions on startup of the Main app, but before the initialization of the [Web Platform](https://www.npmjs.com/package/@glue42/web-platform) library has completed, so that they are available to the Glue42 framework when the user starts the Main app.
+The developer team has decided against hard coding app definitions, as in practice it's more scalable to fetch them from a web service. The Glue42 [Plugins](../../capabilities/plugins/index.html) allow you to execute initial system logic contained in a custom function with access to the `glue` object. You can also configure the [Main app](../../developers/core-concepts/web-platform/overview/index.html) whether to wait for the execution of the Plugin to complete before initialization. This will enable you to fetch and import the app definitions on startup of the Main app, but before the initialization of the [@glue42/web-platform](https://www.npmjs.com/package/@glue42/web-platform) library has completed, so that they are available to the Glue42 framework when the user starts the Main app.
 
 *See also the [Capabilities > Plugins](../../capabilities/plugins/index.html) documentation.*
 
@@ -815,7 +826,7 @@ The developer team has decided against hard coding app definitions, as in practi
 
 Go to the **Clients** app, comment out or delete the previously declared app definitions and remove the `applications` property from the library configuration object.
 
-Next, configure the Plugin in the Main app by using the `plugins` property of the [Web Platform](https://www.npmjs.com/package/@glue42/web-platform) configuration object. Set a name for the Plugin and pass a reference to the `setupApplications()` function in the `start` property of the Plugin object. Use the optional `config` object to pass the URL from which to fetch the app definitions. Set the `critical` property to `true` to instruct the Main app to wait for the Plugin to execute before the Web Platform initialization completes:
+Next, configure the Plugin in the Main app by using the `plugins` property of the [@glue42/web-platform](https://www.npmjs.com/package/@glue42/web-platform) configuration object. Plugin are defined in the `definitions` array of the `plugins` object. Set a name for the Plugin and pass a reference to the `setupApplications()` function in the `start` property of the Plugin object. Use the optional `config` object to pass the URL from which to fetch the app definitions. Set the `critical` property to `true` to instruct the Main app to wait for the Plugin to execute before the Web Platform initialization completes:
 
 ```javascript
 // In `start()`.
@@ -856,7 +867,7 @@ try {
     const appDefinitions = await fetchAppDefinitions(url);
 
     await glue.appManager.inMemory.import(appDefinitions);
-} catch(error) {
+} catch (error) {
     console.error(error.message);
 };
 ```
@@ -869,15 +880,17 @@ Restart the **Clients** app for the changes to take effect.
 
 The latest feedback from the users is that their desktops very quickly become cluttered with multiple floating windows. The [**Glue42 Core**](https://glue42.com/core/) [Workspaces](../../capabilities/windows/workspaces/overview/index.html) feature solves exactly that problem.
 
-The new requirement is that when a user clicks on a client in the **Clients** app, a new Workspace is to open displaying detailed information about the selected client in one app and his stocks portfolio in another. When the user clicks on a stock, a third app is to appear in the same Workspace displaying more details about the selected stock. You will use the **Client Details** app for displaying information about the selected client.
+The new requirement is that when a user clicks on a client in the **Clients** app, a new Workspace is to open displaying detailed information about the selected client in one app and their stocks portfolio in another. When the user clicks on a stock, a third app is to appear in the same Workspace displaying more details about the selected stock. You will use the **Client Details** app for displaying information about the selected client.
 
-Go to the `index.html` and `index.js` files of the **Clients** app and comment out or delete the "Stocks" button and the `stocksButtonHandler()`. Also remove all logic and references related to Channels from the **Clients** and **Stocks** apps that was introduced in a previous chapter. Instead, you will use Workspaces to allow the users to work with multiple clients at once and organize their desktop at the same time. Channels and Workspaces can, of course, be used together to provide extremely enhanced user experience, but in order to focus entirely on working with Workspaces and the [Workspaces API](../../reference/core/latest/workspaces/index.html), the Channels functionality will be ignored.
+Go to the `index.html` and `index.js` files of the **Clients** app and comment out or delete the "Stocks" button and the `stocksButtonHandler()`. Also remove all logic and references related to Channels from the **Clients** and **Stocks** apps that were introduced in a previous chapter.
+
+Instead, you will use Workspaces to allow the users to work with multiple clients at once and organize their desktops at the same time. Channels and Workspaces can, of course, be used together to provide extremely enhanced user experience, but in order to focus entirely on working with Workspaces and the [Workspaces API](../../reference/core/latest/workspaces/index.html), the Channels functionality will be ignored.
 
 *See also the [Capabilities > Windows > Workspaces](../../capabilities/windows/workspaces/overview/index.html) documentation.*
 
 ### 9.1. Setup
 
-All Workspaces are contained in a specialized standalone web app called [Workspaces App](../../capabilities/windows/workspaces/overview/index.html#workspaces_concepts-frame). It's outside the scope of this tutorial to cover building and customizing this app, so you have a ready-to-go app located at `/workspace`. The Workspaces App is already being hosted at `http://localhost:9300/` by the server you started in Chapter 1.
+All Workspaces are contained in a specialized standalone web app called [Workspaces App](../../capabilities/windows/workspaces/overview/index.html#workspaces_concepts-frame). It's outside the scope of this tutorial to cover building and customizing this app, so you have a ready-to-go app located at `/workspace`. The Workspaces App is already being hosted at `http://localhost:9300/`.
 
 ### 9.2. Workspace Layouts
 
@@ -936,23 +949,23 @@ Now the Workspace Layout can be restored by name using the [Workspaces API](../.
 
 ### 9.3. Initializing Workspaces
 
-To be able to use Workspaces functionalities, initialize the [Workspaces API](../../reference/core/latest/workspaces/index.html) in the **Clients**, **Client Details** and **Stocks** apps. The **Stock Details** app will participate in the Workspace, but won't use any Workspaces functionality. Find the `TODO: Chapter 9.3` comment in the `index.html` files of the **Clients**, **Client Details** and **Stocks** apps and reference the Workspaces library:
+To be able to use Workspaces functionalities, initialize the [Workspaces API](../../reference/core/latest/workspaces/index.html) in the **Clients**, **Client Details** and **Stocks** apps. The **Stock Details** app will participate in the Workspace, but won't use any Workspaces functionality.
+
+Find the `TODO: Chapter 9.3` comment in the `index.html` files of the **Clients**, **Stocks** and **Client Details** apps and reference the Workspaces library:
 
 ```html
 <script src="/lib/workspaces.umd.js"></script>
 ```
 
-The Workspaces script attaches the `GlueWorkspaces()` factory function to the global `window` object. Go to the `index.js` files of the **Clients**, **Client Details** and **Stocks** apps and add `GlueWorkspaces` to the `libraries` array of the configuration object when initializing the Glue42 Web library:
-
-In **Clients**:
+The Workspaces script attaches the `GlueWorkspaces()` factory function to the global `window` object. Go to the `index.js` file of the **Clients** app and add the necessary configuration for initializing the Workspaces library. The **Clients** app is also the [Main app](../../developers/core-concepts/web-platform/overview/index.html) and besides the `GlueWorkspaces()` factory function, its configuration object requires also a `workspaces` property defining where the Workspaces App is located:
 
 ```javascript
 // In `start()`.
 
 const config = {
-    // Pass the Workspaces factory function.
+    // Pass the `GlueWorkspaces()` factory function.
     glue: { libraries: [GlueWorkspaces] },
-    // Define where the Workspaces App is located.
+    // Specify the location of the Workspaces App.
     workspaces: { src: "http://localhost:9300/" },
     plugins
 };
@@ -961,9 +974,7 @@ const { glue } = await GlueWebPlatform(config);
 window.glue = glue;
 ```
 
-The **Clients** app is the [Main app](../../developers/core-concepts/web-platform/overview/index.html) and besides the `GlueWorkspaces()` factory function, its configuration object requires also a `workspaces` property defining where the Workspaces App is located.
-
-In **Client Details** and **Stocks**:
+Next, go to the `index.js` files of the **Client Details** and **Stocks** apps and add a reference to the `GlueWorkspaces()` factory function to the `libraries` array of the configuration object when initializing the Glue42 Web library:
 
 ```javascript
 // In `start()`.
@@ -979,7 +990,9 @@ window.glue = glue;
 
 ### 9.4. Opening Workspaces
 
-Next, implement opening a new Workspace when the user clicks on a client in the **Clients** app. Find the `TODO: Chapter 9.4` comment in the `clientClickedHandler()` function in the **Clients** app, restore by name the Workspace Layout you retrieved earlier and pass the selected client as a starting context. The specified context will be attached as a window context to all windows participating in the Workspace:
+Next, implement opening a new Workspace when the user clicks on a client in the **Clients** app.
+
+Find the `TODO: Chapter 9.4` comment in the `clientClickedHandler()` function in the **Clients** app, restore by name the Workspace Layout you retrieved earlier and pass the selected client as a starting context. The specified context will be attached as window context to all windows participating in the Workspace:
 
 ```javascript
 const clientClickedHandler = async (client) => {
@@ -989,7 +1002,7 @@ const clientClickedHandler = async (client) => {
 
     try {
         const workspace = await glue.workspaces.restoreWorkspace("Client Space", restoreConfig);
-    } catch(error) {
+    } catch (error) {
         console.error(error.message);
     };
 };
@@ -1001,7 +1014,7 @@ If everything is correct, a new Workspace will now open every time you click on 
 
 Handle the starting Workspace context to show the details and the portfolio of the selected client in the **Client Details** and **Stocks** apps. Also, set the Workspace title to the name of the selected client.
 
-Go to the **Client Details** app, find the `TODO: Chapter 9.5` comment in the `start()` function and use the [`onContextUpdated()`](../../reference/core/latest/workspaces/index.html#Workspace-onContextUpdated) method of the current Workspace to subscribe for context updates. Invoke the `setFields()` function passing the value of the `client` property of the updated context and set the title of the Workspace to the `name` of the selected client:
+Go to the **Client Details** app, find the `TODO: Chapter 9.5` comment in the `start()` function and use the [`onContextUpdated()`](../../reference/core/latest/workspaces/index.html#Workspace-onContextUpdated) method of the current Workspace to subscribe for context updates. Invoke the `setFields()` function passing the value of the `client` property of the updated context and set the title of the Workspace to the name of the selected client:
 
 ```javascript
 // In `start()`.
@@ -1046,7 +1059,7 @@ Next, you have to make the **Stock Details** app appear in the same Workspace as
 
 *To achieve this functionality, you will have to manipulate a Workspace and its elements. It is recommended that you familiarize yourself with the Workspaces terminology to fully understand the concepts and steps below. Use the available documentation about [Workspaces Concepts](../../capabilities/windows/workspaces/overview/index.html#workspaces_concepts), [Workspace Box Elements](../../capabilities/windows/workspaces/workspaces-api/index.html#box_elements) and the [Workspaces API](../../reference/core/latest/workspaces/index.html).*
 
-The **Stocks** app is a [`WorkspaceWindow`](../../reference/core/latest/workspaces/index.html#WorkspaceWindow) that is the only child of a [`Group`](../../reference/core/latest/workspaces/index.html#Group) element. If you add the **Stock Details** app as a child to that `Group`, it will be added as a second tab window and the user will have to manually switch between both apps. The **Stock Details** has to be a sibling of the **Stocks** app, but both apps have to be visible within the same parent element. That's why, you have to add a new `Group` element as a sibling of the existing `Group` that contains the **Stocks** app, and then load the **Stock Details** app in it.
+The **Stocks** app is a [`WorkspaceWindow`](../../reference/core/latest/workspaces/index.html#WorkspaceWindow) that is the only child of a [`Group`](../../reference/core/latest/workspaces/index.html#Group) element. If you add the **Stock Details** app as a child to that `Group`, it will be added as a second tab window and the user will have to manually switch between both apps. The **Stock Details** app has to be a sibling of the **Stocks** app, but both apps have to be visible within the same parent element. That's why, you have to add a new `Group` element as a sibling of the existing `Group` that contains the **Stocks** app, and then load the **Stock Details** app in it.
 
 After the **Stocks Details** app has been opened in the Workspace as a [`WorkspaceWindow`](../../reference/core/latest/workspaces/index.html#WorkspaceWindow), you have to pass the selected stock as its context. To do that, get a reference to the underlying [Glue42 Window](../../reference/core/latest/windows/index.html#WebWindow) object of the **Stock Details** window using the [`getGdWindow()`](../../reference/core/latest/workspaces/index.html#WorkspaceWindow-getGdWindow) method of the [`WorkspaceWindow`](../../reference/core/latest/workspaces/index.html#WorkspaceWindow) instance and update its context with the [`updateContext()`](../../reference/core/latest/windows/index.html#WebWindow-updateContext) method.
 
@@ -1127,6 +1140,8 @@ const streamDataHandler = (streamData) => {
 subscription.onData(streamDataHandler);
 ```
 
+Now, when you click on a stock in the **Stocks** app, the **Stock Details** app will open below it in the Workspace showing information about the selected stocks.
+
 ## 10. Intents
 
 A new requirement coming from the users is to implement a functionality that exports the portfolio of the selected client. Using the [Intents API](../../reference/core/latest/intents/index.html), you will instrument the **Stocks** app to raise an Intent for exporting the portfolio, and another app will perform the actual action - the **Portfolio Downloader**. The benefit of this is that at a later stage of the project, the app for exporting the portfolio can be replaced, or another app for handling the exported portfolio in a different way can also register the same Intent. In any of these cases, code changes in the **Stocks** app won't be necessary.
@@ -1161,7 +1176,7 @@ The **Portfolio Downloader** app is already registered as an Intent handler in t
 }
 ```
 
-Go to the `index.js` file of the **Portfolio Downloader** app and find the `TODO: Chapter 10.1` comment. Pass the already implemented `intentHandler()` function to the [`addIntentListener()`](../../reference/core/latest/intents/index.html#API-addIntentListener) method, so that this function will be called whenever the **Portfolio Downloader** app is targeted as an Intent handler by the user:
+Go to the `index.js` file of the **Portfolio Downloader** app and find the `TODO: Chapter 10.1` comment. Pass the name of the Intent and the already implemented `intentHandler()` function to the [`addIntentListener()`](../../reference/core/latest/intents/index.html#API-addIntentListener) method, so that it will be called whenever the **Portfolio Downloader** app is targeted as an Intent handler by the user:
 
 ```javascript
 // In `start()`.
@@ -1175,26 +1190,30 @@ The **Stocks** app must raise an Intent request when the user clicks a button fo
 
 Go to the `index.html` file of the **Stocks** app, find the `TODO Chapter 10.2` comment and uncomment the "Export Portfolio" button.
 
-Go to the `index.js` file of the **Stocks** app and find the `TODO: Chapter 10.2` comment in the `exportPortfolioButtonHandler()` function. Perform a check whether an Intent with the name `"ExportPortfolio"` exists. If so, create an Intent request object holding the name of the Intent and specifying targeting behavior and context for it. Use the [`raise()`](../../reference/core/latest/intents/index.html#API-raise) method to raise an Intent and pass the Intent request object to it:
+Go to the `index.js` file of the **Stocks** app and find the `TODO: Chapter 10.2` comment in the `exportPortfolioButtonHandler()` function. Perform a check whether an Intent with the name `"ExportPortfolio"` exists. If so, create an [Intent request object](../../reference/core/latest/intents/index.html#IntentRequest-target) holding the name of the Intent and specifying targeting behavior and context for it. Use the [`raise()`](../../reference/core/latest/intents/index.html#API-raise) method to raise an Intent and pass the Intent request object to it:
 
 ```javascript
 // In `exportPortfolioButtonHandler()`.
+try {
+    const intents = await glue.intents.find("ExportPortfolio");
 
-const intents = await glue.intents.find("ExportPortfolio");
+    if (!intents) {
+        return;
+    };
 
-if (!intents) {
-    return;
+    const intentRequest = {
+        intent: "ExportPortfolio",
+        context: {
+            type: "ClientPortfolio",
+            data: { portfolio, clientName }
+        }
+    };
+
+    await glue.intents.raise(intentRequest);
+
+} catch (error) {
+    console.error(error.message);
 };
-
-const intentRequest = {
-    intent: "ExportPortfolio",
-    context: {
-        type: "ClientPortfolio",
-        data: { portfolio, clientName }
-    }
-};
-
-glue.intents.raise(intentRequest);
 ```
 
 Find the `TODO: Chapter 10.2` comment in the `start()` function and uncomment the click event handler for the "Export Portfolio" button.
@@ -1234,7 +1253,7 @@ Next, go to the `clientClickedHandler()` function and modify the existing code t
 try {
     const workspace = await glue.workspaces.restoreWorkspace("Client Space", restoreConfig);
 
-    raiseNotificationOnWorkspaceOpen(client.name, workspace);
+    await raiseNotificationOnWorkspaceOpen(client.name, workspace);
 } catch (error) {
     console.error(error.message);
 };
@@ -1251,9 +1270,9 @@ Go to the `raiseNotificationOnWorkspaceOpen()` function and use the `onclick` pr
 
 notification.onclick = () => {
     // This will focus the Workspaces App.
-    workspace.frame.focus();
+    workspace.frame.focus().catch(console.error);
     // This will focus the Workspace for the respective client.
-    workspace.focus();
+    workspace.focus().catch(console.error);
 };
 ```
 

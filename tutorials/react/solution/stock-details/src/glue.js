@@ -6,24 +6,24 @@ import {
 export const getMyWindowContext = (setWindowContext) => async (glue) => {
     const myWindow = glue.windows.my();
     const context = await myWindow.getContext();
-    
-    setWindowContext({ symbol: context.symbol });
+
+    setWindowContext({ stock: context.stock });
 
     myWindow.onContextUpdated((context) => {
         if (context) {
-            setWindowContext({ symbol: context.symbol });
+            setWindowContext({ stock: context.stock });
         };
     });
 };
 
-export const subscribeForInstrumentStream = (handler) => async (glue, symbol) => {
-    if (symbol) {
+export const subscribeForInstrumentStream = (handler) => async (glue, stock) => {
+    if (stock) {
         // Create a stream subscription.
         const subscription = await glue.interop.subscribe(SET_PRICES_STREAM);
         const handleUpdates = ({ data: stocks }) => {
-            if (stocks[symbol]) {
-                handler(stocks[symbol]);
-            } else if (Array.isArray(symbol)) {
+            if (stocks[stock]) {
+                handler(stocks[stock]);
+            } else if (Array.isArray(stock)) {
                 handler(stocks);
             };
         };
@@ -37,7 +37,7 @@ export const subscribeForInstrumentStream = (handler) => async (glue, symbol) =>
 };
 
 export const subscribeForSharedContext = (handler) => (glue) => {
-    // Subscribing for the shared context by 
+    // Subscribing for the shared context by
     // providing a context name and a handler for context updates.
     glue.contexts.subscribe(SHARED_CONTEXT_NAME, handler);
 };

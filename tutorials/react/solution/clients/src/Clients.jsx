@@ -18,6 +18,7 @@ function Clients() {
         fetchClients();
     }, []);
     const glue = useContext(GlueContext);
+    window.glue = glue;
     const openWorkspace = useGlue(startAppWithWorkspace);
 
     return (

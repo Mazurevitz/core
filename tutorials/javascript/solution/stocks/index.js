@@ -189,21 +189,25 @@ const stockClickedHandler = async (stock) => {
 };
 
 const exportPortfolioButtonHandler = async (portfolio) => {
-    const intents = await glue.intents.find("ExportPortfolio");
+    try { 
+        const intents = await glue.intents.find("ExportPortfolio");
 
-    if (!intents) {
-        return;
-    };
+        if (!intents) {
+            return;
+        };
 
-    const intentRequest = {
-        intent: "ExportPortfolio",
-        context: {
-            type: "ClientPortfolio",
-            data: { portfolio, clientName }
-        }
-    };
+        const intentRequest = {
+            intent: "ExportPortfolio",
+            context: {
+                type: "ClientPortfolio",
+                data: { portfolio, clientName }
+            }
+        };
 
-    glue.intents.raise(intentRequest);
+        await glue.intents.raise(intentRequest);
+    } catch (error) {
+        console.error(error.message);
+    }
 };
 
 
@@ -314,7 +318,7 @@ const start = async () => {
             return;
         };
         
-        exportPortfolioButtonHandler(clientPortfolioStocks).catch(console.error);
+        exportPortfolioButtonHandler(clientPortfolioStocks);
     };
 };
 

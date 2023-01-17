@@ -37,6 +37,15 @@ function Stocks() {
                         Stocks
                     </h1>
                 </div>
+                {/* <div className="col-md-10 py-10">
+                    <button
+                        type="button"
+                        className="mb-3 btn btn-primary"
+                        onClick={}
+                    >
+                        Export Portfolio
+                    </button>
+                </div> */}
             </div>
             <div className="row">
                 <div className="col">
@@ -66,6 +75,6 @@ function Stocks() {
             </div>
         </div>
     );
-}
+};
 
 export default Stocks;

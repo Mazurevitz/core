@@ -5,7 +5,8 @@ import {
     createInstrumentStream,
     subscribeForInstrumentStream,
     setClientFromWorkspace,
-    openStockDetailsInWorkspace
+    openStockDetailsInWorkspace,
+    raiseExportPortfolioIntentRequest
 } from "./glue";
 
 function Stocks() {
@@ -38,11 +39,13 @@ function Stocks() {
         };
         fetchPortfolio();
     }, [clientId]);
+
     const glue = useContext(GlueContext);
     const showStockDetails = useGlue(openStockDetailsInWorkspace);
     useGlue(createInstrumentStream);
     const setDefaultClient = () => setClient({ clientId: "", clientName: "" });
     useGlue(setClientFromWorkspace(setClient));
+    const exportPortfolioButtonHandler = useGlue(raiseExportPortfolioIntentRequest);
 
     return (
         <div className="container-fluid">
@@ -68,11 +71,18 @@ function Stocks() {
                     <button
                         type="button"
                         className="mb-3 btn btn-primary"
-                        onClick={() => {                     
-                            setDefaultClient();
-                        }}
+                        onClick={() => setDefaultClient()}
                     >
                         Show All
+                    </button>
+                </div>
+                <div className="col-md-10 py-10">
+                    <button
+                        type="button"
+                        className="mb-3 btn btn-primary"
+                        onClick={() => exportPortfolioButtonHandler(portfolio, clientName)}
+                    >
+                        Export Portfolio
                     </button>
                 </div>
             </div>

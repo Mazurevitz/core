@@ -62,7 +62,7 @@ export const publishInstrumentPrice = (stream) => {
     }, 1500);
 };
 
-export const openStockDetails = (glue) => async (symbol) => {
+export const openStockDetails = (glue) => async (stock) => {
     const detailsApplication = glue.appManager.application("Stock Details");
 
     // Check whether an instance with the selected stock is already running.
@@ -70,10 +70,10 @@ export const openStockDetails = (glue) => async (symbol) => {
         // Use the `instances` property to get all running application instances.
         detailsApplication.instances.map(instance => instance.getContext())
     );
-    const isRunning = contexts.find(context => context.symbol.RIC === symbol.RIC);
-    
+    const isRunning = contexts.find(context => context.stock.RIC === stock.RIC);
+
     if (!isRunning) {
-        detailsApplication.start({ symbol }).catch(console.error);
+        detailsApplication.start({ stock }).catch(console.error);
     };
 };
 
@@ -87,14 +87,14 @@ export const createInstrumentStream = async (glue) => {
     publishInstrumentPrice(stream);
 };
 
-export const subscribeForInstrumentStream = (handler) => async (glue, symbol) => {
-    if (symbol) {
+export const subscribeForInstrumentStream = (handler) => async (glue, stock) => {
+    if (stock) {
         // Create a stream subscription.
         const subscription = await glue.interop.subscribe(SET_PRICES_STREAM);
         const handleUpdates = ({ data: stocks }) => {
-            if (stocks[symbol]) {
-                handler(stocks[symbol]);
-            } else if (Array.isArray(symbol)) {
+            if (stocks[stock]) {
+                handler(stocks[stock]);
+            } else if (Array.isArray(stock)) {
                 handler(stocks);
             };
         };
@@ -122,7 +122,7 @@ export const setClientPortfolioSharedContext = (glue) => (
 };
 
 export const subscribeForSharedContext = (handler) => (glue) => {
-    // Subscribing for the shared context by 
+    // Subscribing for the shared context by
     // providing a context name and a handler for context updates.
     glue.contexts.subscribe(SHARED_CONTEXT_NAME, handler);
 };
@@ -180,7 +180,7 @@ export const setClientFromWorkspace = (setClient) => async (glue) => {
     });
 };
 
-export const openStockDetailsInWorkspace = (glue) => async (symbol) => {
+export const openStockDetailsInWorkspace = (glue) => async (stock) => {
     // Reference to the Glue42 Window object of the Stock Details instance.
     let detailsGlue42Window;
 
@@ -207,5 +207,29 @@ export const openStockDetailsInWorkspace = (glue) => async (symbol) => {
     };
 
     // Update the window context with the selected stock.
-    detailsGlue42Window.updateContext({ symbol });
+    detailsGlue42Window.updateContext({ stock });
+};
+
+export const raiseExportPortfolioIntentRequest = (glue) => async (portfolio, clientName) => {
+
+    try {
+        const intents = await glue.intents.find("ExportPortfolio");
+
+        if (!intents) {
+            return;
+        };
+
+        const intentRequest = {
+            intent: "ExportPortfolio",
+            context: {
+                type: "ClientPortfolio",
+                data: { portfolio, clientName }
+            }
+        };
+
+        await glue.intents.raise(intentRequest);
+
+    } catch(error) {
+        console.error(error.message);
+    }
 };

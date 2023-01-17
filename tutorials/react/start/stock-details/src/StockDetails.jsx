@@ -64,6 +64,6 @@ function StockDetails() {
             </div>
         </div>
     );
-}
+};
 
 export default StockDetails;

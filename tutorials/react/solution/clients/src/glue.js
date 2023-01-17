@@ -103,6 +103,26 @@ export const startApp = glue => async () => {
     glue.appManager.application("Stocks").start({ channel });
 };
 
-export const startAppWithWorkspace = (glue) => (client) => {
-    glue.workspaces.restoreWorkspace("Client Space", { context: client });
+export const startAppWithWorkspace = (glue) => async (client) => {
+    try {
+        const workspace = await glue.workspaces.restoreWorkspace("Client Space", { context: client });
+        
+        await raiseNotificationOnWorkspaceOpen(glue.notifications, client.clientName, workspace)
+    } catch (error) {
+        console.error(error.message);
+    }
+};
+
+const raiseNotificationOnWorkspaceOpen = async (notifications, clientName, workspace) => {
+    const options = {
+        title: "New Workspace",
+        body: `A new Workspace for ${clientName} was opened!`,
+    };
+
+    const notification = await notifications.raise(options);
+
+    notification.onclick = () => {
+        workspace.frame.focus().catch(console.error);
+        workspace.focus().catch(console.error);
+    };
 };

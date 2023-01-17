@@ -7,7 +7,7 @@ function StockDetails() {
     const [windowContext, setWindowContext] = useState({});
     useGlue(getMyWindowContext(setWindowContext));
     const {
-        symbol: { RIC, BPOD, Bloomberg, Description, Exchange, Venues } = {}
+        stock: { RIC, BPOD, Bloomberg, Description, Exchange, Venues } = {}
     } = windowContext || {};
     const [{ Bid, Ask }, setPrices] = useState({ Bid: windowContext.Bid, Ask: windowContext.Ask});
     useGlue(subscribeForInstrumentStream(setPrices), [RIC]);

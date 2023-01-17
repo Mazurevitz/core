@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const clients = require("./data/clients");
 const portfolio = require("./data/portfolio");
 const applications = require("./data/applications");
+const applicationsReact = require("./data/applicationsReact");
 const layouts = require("./data/layouts");
 
 const API_URL_PREFIX = "/api";
@@ -44,6 +45,10 @@ app.get(`${API_URL_PREFIX}/portfolio`, (req, res) => {
 
 app.get(`${API_URL_PREFIX}/applications`, (req, res) => {
     res.json(applications);
+});
+
+app.get(`${API_URL_PREFIX}/applicationsReact`, (req, res) => {
+    res.json(applicationsReact);
 });
 
 app.get(`${API_URL_PREFIX}/layouts`, (req, res) => {

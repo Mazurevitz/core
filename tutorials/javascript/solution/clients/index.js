@@ -63,7 +63,7 @@ const clientClickedHandler = async (client) => {
     try {
         const workspace = await glue.workspaces.restoreWorkspace("Client Space", restoreConfig);
 
-        raiseNotificationOnWorkspaceOpen(client.name, workspace);
+        await raiseNotificationOnWorkspaceOpen(client.name, workspace);
     } catch(error) {
         console.error(error.message);
     };
@@ -97,8 +97,8 @@ const raiseNotificationOnWorkspaceOpen = async (clientName, workspace) => {
     const notification = await glue.notifications.raise(options);
 
     notification.onclick = () => {
-        workspace.frame.focus();
-        workspace.focus();
+        workspace.frame.focus().catch(console.error);
+        workspace.focus().catch(console.error);
     };
 };
 

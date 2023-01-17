@@ -64,6 +64,6 @@ function Clients() {
             </div>
         </div>
     );
-}
+};
 
 export default Clients;
