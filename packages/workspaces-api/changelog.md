@@ -1,3 +1,5 @@
+1.18.3
+fix: layouts import in Enterprise now uses a new operation to import all layouts instead of one by one
 1.18.2
 chore: bump due to dependencies update
 1.18.1

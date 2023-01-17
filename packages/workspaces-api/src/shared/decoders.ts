@@ -598,6 +598,14 @@ export const workspacesImportLayoutDecoder: Decoder<{ layout: Glue42Workspaces.W
     )
 });
 
+export const workspacesImportLayoutsDecoder: Decoder<{ layouts: Glue42Workspaces.WorkspaceLayout[]; mode: "replace" | "merge" }> = object({
+    layouts: array(workspaceLayoutDecoder),
+    mode: oneOf<"replace" | "merge">(
+        constant("replace"),
+        constant("merge")
+    )
+});
+
 export const exportedLayoutsResultDecoder: Decoder<ExportedLayoutsResult> = object({
     layouts: array(workspaceLayoutDecoder)
 });

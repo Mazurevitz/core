@@ -2,6 +2,7 @@
 describe('import() Should ', function () {
     let preExistingLayouts = [];
     let basicImport;
+    let secondBasicImport;
 
     const basicConfig = {
         children: [
@@ -23,9 +24,13 @@ describe('import() Should ', function () {
 
         const workspace = await glue.workspaces.createWorkspace(basicConfig);
         await workspace.saveLayout("layout.random.1");
+        await workspace.saveLayout("layout.random.2");
+
         basicImport = (await glue.workspaces.layouts.export()).find(l => l.name === "layout.random.1");
+        secondBasicImport = (await glue.workspaces.layouts.export()).find(l => l.name === "layout.random.2");
 
         await glue.workspaces.layouts.delete("layout.random.1");
+        await glue.workspaces.layouts.delete("layout.random.2");
     });
 
     afterEach(async () => {
@@ -42,6 +47,39 @@ describe('import() Should ', function () {
         const summariesContainLayout = summaries.some(s => s.name === basicImport.name);
 
         expect(summariesContainLayout).to.be.true;
+    });
+
+    it("import two layouts when both are valid", async () => {
+        await glue.workspaces.layouts.import([basicImport, secondBasicImport]);
+
+        const summaries = await glue.workspaces.layouts.getSummaries();
+        const bothLayoutsFromSummaries = summaries.filter(s => s.name === basicImport.name || s.name === secondBasicImport.name);
+
+        expect(bothLayoutsFromSummaries.length).to.eql(2);
+    });
+
+    it("replace the layouts when the mode is not specified", async () => {
+        await glue.workspaces.layouts.import([basicImport]);
+        const summaries = await glue.workspaces.layouts.getSummaries();
+
+        expect(summaries.length === 1).to.be.true;
+    });
+
+    it("replace the layouts when the mode is replace", async () => {
+        await glue.workspaces.layouts.import([basicImport], "replace");
+        const summaries = await glue.workspaces.layouts.getSummaries();
+
+        expect(summaries.length === 1).to.be.true;
+    });
+
+    it("merge the layouts when the mode is merge", async () => {
+        const layoutsCountBeforeImport = (await glue.workspaces.layouts.export()).length;
+        await glue.workspaces.layouts.import([basicImport], "merge");
+        await glue.workspaces.layouts.import([secondBasicImport], "merge");
+
+        const summaries = await glue.workspaces.layouts.getSummaries();
+
+        expect(summaries.length).to.eql(layoutsCountBeforeImport + 2);
     });
 
     it("reject when the layout is an invalid object", (done) => {

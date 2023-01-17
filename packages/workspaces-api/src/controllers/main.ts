@@ -110,7 +110,7 @@ export class MainController implements WorkspacesController {
     }
 
     public async getWorkspaceByWindowId(itemId: string): Promise<Workspace> {
-        if(!window.glue42gd){
+        if (!window.glue42gd) {
             // workspace-ui-core doesn't accept an itemId for getWorkspaceSnapshot, but GD does and getWorkspaceSnapshot is significantly faster
             return (await this.getWorkspaces((wsp) => !!wsp.getWindow((w) => w.id === itemId)))[0];
         }
@@ -223,8 +223,13 @@ export class MainController implements WorkspacesController {
     public async importLayouts(layouts: Glue42Workspaces.WorkspaceLayout[], mode: "replace" | "merge"): Promise<void> {
 
         if ((window as any).glue42gd) {
-            // this is a soft-reversal to handle an import issue with GD
-            await Promise.all(layouts.map((layout) => this.bridge.send(OPERATIONS.importLayout.name, { layout, mode })));
+            try {
+                // ensuring backwards compatibility
+                await this.bridge.send(OPERATIONS.importLayouts.name, { layouts, mode });
+            } catch (error) {
+                // this is a soft-reversal to handle an import issue with GD
+                await Promise.all(layouts.map((layout) => this.bridge.send(OPERATIONS.importLayout.name, { layout, mode })));
+            }
             return;
         }
 

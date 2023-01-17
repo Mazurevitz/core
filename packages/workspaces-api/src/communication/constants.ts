@@ -47,7 +47,8 @@ import {
     shortcutConfigDecoder,
     frameSnapshotConfigDecoder,
     setMaximizationBoundaryConfigDecoder,
-    loadingAnimationConfigDecoder
+    loadingAnimationConfigDecoder,
+    workspacesImportLayoutsDecoder
 } from "../shared/decoders";
 import { ControlOperation, StreamOperation } from "../types/protocol";
 import { WorkspaceEventType } from "../types/subscription";
@@ -63,6 +64,7 @@ type OperationsTypes = "isWindowInWorkspace" |
     "deleteLayout" |
     "saveLayout" |
     "importLayout" |
+    "importLayouts" |
     "exportAllLayouts" |
     "restoreItem" |
     "maximizeItem" |
@@ -154,6 +156,7 @@ export const OPERATIONS: { [key in OperationsTypes]: ControlOperation } = {
     deleteLayout: { name: "deleteLayout", resultDecoder: voidResultDecoder, argsDecoder: deleteLayoutConfigDecoder },
     saveLayout: { name: "saveLayout", resultDecoder: workspaceLayoutDecoder, argsDecoder: workspaceLayoutSaveConfigDecoder },
     importLayout: { name: "importLayout", resultDecoder: voidResultDecoder, argsDecoder: workspacesImportLayoutDecoder },
+    importLayouts: { name: "importLayouts", resultDecoder: voidResultDecoder, argsDecoder: workspacesImportLayoutsDecoder },
     exportAllLayouts: { name: "exportAllLayouts", resultDecoder: exportedLayoutsResultDecoder },
     restoreItem: { name: "restoreItem", argsDecoder: simpleItemConfigDecoder, resultDecoder: voidResultDecoder },
     maximizeItem: { name: "maximizeItem", argsDecoder: simpleItemConfigDecoder, resultDecoder: voidResultDecoder },
