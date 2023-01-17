@@ -81,7 +81,7 @@ export class LayoutsManager {
     }
 
     public getLastSession() {
-        const workspacesFrameCache = window.glue42core?.workspacesFrameCache ?? true;
+        const workspacesFrameCache = this._platformCommunicator.platformConfig.workspacesFrameCache ?? true;
         if (!workspacesFrameCache) {
             return;
         }
@@ -202,7 +202,7 @@ export class LayoutsManager {
     }
 
     public async saveWorkspacesFrame(workspaces: Workspace[]) {
-        const workspacesFrameCache = window.glue42core?.workspacesFrameCache ?? true;
+        const workspacesFrameCache = this._platformCommunicator.platformConfig?.workspacesFrameCache ?? true;
         if (!workspacesFrameCache) {
             return;
         }

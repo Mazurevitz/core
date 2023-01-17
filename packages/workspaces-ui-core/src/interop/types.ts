@@ -536,3 +536,9 @@ export interface GetWorkspaceWindowsOnLayoutSaveContext {
 }
 
 export type PlatformOperations = CleanupClientsOnWorkspaceFrameUnregister | GetWorkspaceWindowsOnLayoutSaveContext;
+
+export interface Glue42CoreConfig {
+    workspacesFrameCache?: boolean;
+    initAsEmptyFrame?: boolean;
+    platformVersion?: string;
+}

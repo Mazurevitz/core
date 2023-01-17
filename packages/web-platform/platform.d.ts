@@ -339,6 +339,7 @@ export namespace Glue42WebPlatform {
             hibernation?: HibernationConfig;
             loadingStrategy?: LoadingConfig;
             isFrame?: boolean;
+            initAsEmpty?: boolean;
             frameCache?: boolean;
         }
     }

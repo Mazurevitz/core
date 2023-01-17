@@ -353,6 +353,7 @@ export const workspacesConfigDecoder: Decoder<Glue42WebPlatform.Workspaces.Confi
     hibernation: optional(hibernationConfigDecoder),
     loadingStrategy: optional(loadingConfigDecoder),
     isFrame: optional(boolean()),
+    initAsEmpty: optional(boolean()),
     frameCache: optional(boolean())
 });
 

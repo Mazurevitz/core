@@ -1,14 +1,18 @@
 import { Glue42Web } from "@glue42/web";
 import { WorkspacesSystemConfig } from "../types/internal";
 import { PlatformControlMethod } from "../utils/constants";
-import { GetWorkspaceWindowOnLayoutSaveContextResult, GetWorkspaceWindowsOnLayoutSaveContextConfig, OperationCheckResult, PlatformOperations, WorkspaceWindowOnSaveData } from "./types";
+import { GetWorkspaceWindowOnLayoutSaveContextResult, GetWorkspaceWindowsOnLayoutSaveContextConfig, Glue42CoreConfig, OperationCheckResult, PlatformOperations, WorkspaceWindowOnSaveData } from "./types";
 
-declare var window: Window & { glue42core: { platformVersion: string } };
+declare var window: Window & { glue42core: Glue42CoreConfig };
 
 export class PlatformCommunicator {
 
     constructor(private readonly _glue: Glue42Web.API,
         private readonly _frameId: string) {
+    }
+
+    public get platformConfig(): Glue42CoreConfig | undefined {
+        return window.glue42core;
     }
 
     public async requestOnLayoutSaveContexts(data: GetWorkspaceWindowsOnLayoutSaveContextConfig): Promise<WorkspaceWindowOnSaveData[]> {

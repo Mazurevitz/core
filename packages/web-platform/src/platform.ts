@@ -61,17 +61,23 @@ export class Platform {
             this.session.saveSystemSettings(systemSettings);
         }
 
-        this.platformConfig.workspacesFrameCache = typeof config.workspaces?.frameCache === "boolean" ? config.workspaces?.frameCache : true;
+        this.platformConfig.workspacesFrameCache = typeof verifiedConfig.workspaces?.frameCache === "boolean" ? verifiedConfig.workspaces?.frameCache : true;
 
         // deep merge deletes the promise object when merging, probably due to some cyclical references 
         this.transferPromiseObjects(verifiedConfig);
 
         const glue42core = {
-            platformStarted: true,
-            isPlatformFrame: !!config?.workspaces?.isFrame,
-            environment: Object.assign({}, this.platformConfig.environment, { extension: undefined }),
+            isPlatformFrame: !!verifiedConfig.workspaces?.isFrame,
+            initAsEmptyFrame: !!verifiedConfig.workspaces?.initAsEmpty,
             workspacesFrameCache: this.platformConfig.workspacesFrameCache,
-            communicationId: systemSettings.systemInstanceId
+            platformStarted: true,
+            environment: Object.assign({}, this.platformConfig.environment, { extension: undefined }),
+            communicationId: systemSettings.systemInstanceId,
+            workspaces: {
+                frameCache: this.platformConfig.workspacesFrameCache,
+                isPlatform: !!verifiedConfig.workspaces?.isFrame,
+                initAsEmpty: !!verifiedConfig.workspaces?.initAsEmpty
+            }
         };
 
         (window as any).glue42core = glue42core;

@@ -104,7 +104,7 @@ export class WorkspacesManager {
         this._layoutsManager = new LayoutsManager(this.stateResolver, glue, this._configFactory, converter, new ConstraintsValidator(), this._platformCommunicator);
         this._popupManager = new PopupManagerComposer(new PopupManager(glue), new ComponentPopupManager(componentFactory, frameId), componentFactory);
 
-        if (!startupConfig.emptyFrame) {
+        if (!startupConfig.emptyFrame && !this._platformCommunicator.platformConfig?.initAsEmptyFrame) {
             this.initLayout();
         }
 

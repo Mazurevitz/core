@@ -31,6 +31,9 @@ export class SystemController implements LibController {
     public async start(config: InternalPlatformConfig): Promise<void> {
         this.environment = config.environment;
         this.base = {
+            workspaces: {
+                frameCache: config.workspacesFrameCache
+            },
             workspacesFrameCache: config.workspacesFrameCache,
             communicationId: this.session.getSystemSettings()?.systemInstanceId,
             platformVersion: version
