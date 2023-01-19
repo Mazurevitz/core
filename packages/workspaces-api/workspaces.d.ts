@@ -1490,6 +1490,9 @@ export namespace Glue42Workspaces {
         /** A flag showing whether or not the window is maximized within it's box */
         isMaximized: boolean;
 
+        /** A flag showing whether or not the window is selected */
+        isSelected: boolean;
+
         /** A flag showing whether or not the window's content is loaded */
         isLoaded: boolean;
 

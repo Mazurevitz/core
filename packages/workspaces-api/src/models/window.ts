@@ -61,8 +61,7 @@ export class Window implements Glue42Workspaces.WorkspaceWindow {
     }
 
     public get focused(): boolean {
-        // Should return undefined in core, because focus state cannot be monitored reliably
-        return this.isLoaded ? this.getGdWindow().isFocused : false;
+        return this.getGdWindow().isFocused;
     }
 
     public get title(): string {
