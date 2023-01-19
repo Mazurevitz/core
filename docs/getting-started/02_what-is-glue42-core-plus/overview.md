@@ -21,6 +21,8 @@ In a licensed [**Glue42 Core+**](https://glue42.com/core-plus/) project, you can
 
 [**Glue42 Core+**](https://glue42.com/core-plus/) enables you to connect to a [Glue42 Server](https://docs.glue42.com/glue42-concepts/glue42-server/index.html), and even achieve interoperability across different user machines. Customer support is also available under a paid license for [**Glue42 Core+**](https://glue42.com/core-plus/).
 
+*For the [**Glue42 Core+**](https://glue42.com/core-plus/) general and API requirements and compatibility, see the [Requirements & Compatibility](../requirements-compatibility/index.html) section.*
+
 ## Licensing
 
 The [`@glue42/core-plus`](https://www.npmjs.com/package/@glue42/core-plus) library is free to download from the public NPM registry, but it requires a valid license key to operate. To purchase a license or request a trial one, [contact us](https://glue42.com/contacts/) at `info@glue42.com`.
@@ -76,12 +78,3 @@ Customer support is included under a paid license for [**Glue42 Core+**](https:/
 The basic structure of a [**Glue42 Core+**](https://glue42.com/core-plus/) project is identical to a [**Glue42 Core**](https://glue42.com/core/) project. It consists of a [Main app](../../developers/core-plus-platform/index.html) which uses the [Glue42 Core+ Platform](../../developers/core-plus-platform/index.html) library and multiple [Web Client](../../developers/core-concepts/web-client/overview/index.html) apps that use the [Glue42 Web](../../reference/core/latest/glue42%20web/index.html) library. The Main app acts as a hub through which the user can access all other apps part of the [**Glue42 Core+**](https://glue42.com/core-plus/) project while the [`@glue42/core-plus`](https://www.npmjs.com/package/@glue42/core-plus) library provides the communication connection between all client apps. The [Glue42 Web](../../reference/core/latest/glue42%20web/index.html) library provides Glue42 functionality to the client apps through sets of Glue42 APIs.
 
 *For more details, see the [Capabilities](../../capabilities/application-management/index.html) section.*
-
-## Requirements
-
-All [requirements](../what-is-glue42-core/index.html#requirements) for a [**Glue42 Core**](https://glue42.com/core/) project are also valid for [**Glue42 Core+**](https://glue42.com/core-plus/).
-
-Additionally, in order to be able to participate in [Global Layouts](../../capabilities/windows/layouts/setup/index.html), the [Web Client](../../developers/core-concepts/web-client/overview/index.html) apps must use:
-
-- [`@glue42/web`](https://www.npmjs.com/package/@glue42/web) version 2.8.1 or later;
-- [`@glue42/workspaces-api`](https://www.npmjs.com/package/@glue42/workspaces-api) version 1.16.4 or later;
