@@ -1,6 +1,8 @@
-1.18.3
+1.19.0
 fix: layouts import in Enterprise now uses a new operation to import all layouts instead of one by one
 feat: added isSelected to the workspace window typings and enabled the focused property for Core and Core+
+feat: adds support for layoutComponentId
+fix: closing a workspace now checks if this is the last workspace in a platform frame
 1.18.2
 chore: bump due to dependencies update
 1.18.1

@@ -1,3 +1,5 @@
+1.12.0
+fix: adds various improvements for global layouts in core+ when the platform is a frame
 1.11.10
 chore: bump due to dependencies update
 1.11.9

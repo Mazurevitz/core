@@ -1,3 +1,8 @@
+1.19.0
+feat: adds support for layoutsComponentId
+feat: platform id now has g42- prefix
+chore: improved fallback when opened by client
+feat: adds support for initAsEmpty workspace frame platform
 1.18.3
 chore: fixes the issue with react building core+ for production due to web package intents resolver positioning func
 1.18.2
