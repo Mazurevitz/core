@@ -93,9 +93,9 @@ export const windowOpenSettingsDecoder: Decoder<Glue42Web.Windows.Settings | und
     context: optional(anyJson()),
     relativeTo: optional(nonEmptyStringDecoder),
     relativeDirection: optional(windowRelativeDirectionDecoder),
-    windowId: optional(nonEmptyStringDecoder)
+    windowId: optional(nonEmptyStringDecoder),
+    layoutComponentId: optional(nonEmptyStringDecoder)
 }));
-
 
 export const openWindowConfigDecoder: Decoder<OpenWindowConfig> = object({
     name: nonEmptyStringDecoder,
@@ -297,7 +297,8 @@ export const applicationStartConfigDecoder: Decoder<ApplicationStartConfig> = ob
         constant("right"),
         constant("bottom")
     )),
-    forceChromeTab: optional(boolean())
+    forceChromeTab: optional(boolean()),
+    layoutComponentId: optional(nonEmptyStringDecoder)
 });
 
 export const layoutTypeDecoder: Decoder<Glue42Web.Layouts.LayoutType> = oneOf<"Global" | "Activity" | "ApplicationDefault" | "Swimlane" | "Workspace">(
@@ -406,7 +407,8 @@ export const workspaceFrameComponentStateDecoder: Decoder<Glue42Web.Layouts.Work
     selectedWorkspace: nonNegativeNumberDecoder,
     workspaces: array(workspaceLayoutComponentStateDecoder),
     windowState: optional(nonEmptyStringDecoder),
-    restoreState: optional(nonEmptyStringDecoder)
+    restoreState: optional(nonEmptyStringDecoder),
+    context: optional(anyJson())
 });
 
 export const workspaceFrameComponentDecoder: Decoder<Glue42Web.Layouts.WorkspaceFrameComponent> = object({

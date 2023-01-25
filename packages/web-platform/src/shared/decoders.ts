@@ -185,7 +185,8 @@ export const workspaceFrameComponentStateDecoder: Decoder<Glue42Web.Layouts.Work
     selectedWorkspace: nonNegativeNumberDecoder,
     workspaces: array(workspaceLayoutComponentStateDecoder),
     windowState: optional(nonEmptyStringDecoder),
-    restoreState: optional(nonEmptyStringDecoder)
+    restoreState: optional(nonEmptyStringDecoder),
+    context: optional(anyJson())
 });
 
 export const workspaceFrameComponentDecoder: Decoder<Glue42Web.Layouts.WorkspaceFrameComponent> = object({
@@ -416,7 +417,9 @@ export const windowOpenSettingsDecoder: Decoder<Glue42Web.Windows.Settings> = ob
     height: optional(nonNegativeNumberDecoder),
     context: optional(anyJson()),
     relativeTo: optional(nonEmptyStringDecoder),
-    relativeDirection: optional(windowRelativeDirectionDecoder)
+    relativeDirection: optional(windowRelativeDirectionDecoder),
+    windowId: optional(nonEmptyStringDecoder),
+    layoutComponentId: optional(nonEmptyStringDecoder)
 });
 
 export const interceptorRegistrationRequestDecoder: Decoder<Glue42WebPlatform.Plugins.InterceptorRegistrationRequest> = object({

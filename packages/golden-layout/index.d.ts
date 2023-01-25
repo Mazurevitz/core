@@ -723,6 +723,11 @@ declare module '@glue42/golden-layout' {
              * Specifies where the workspace should appear
              */
             positionIndex?: number;
+
+            /**
+             * The title which will appear for the current workspace
+             */
+            title?: string;
         }
 
         export interface Config {

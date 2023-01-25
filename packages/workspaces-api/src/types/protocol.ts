@@ -215,6 +215,10 @@ export interface GetWorkspaceIconResult {
     icon: string;
 }
 
+export interface GetPlatformFrameIdResult {
+    id?: string;
+}
+
 // #endregion
 
 // #region outgoing

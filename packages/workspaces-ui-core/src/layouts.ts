@@ -86,7 +86,7 @@ export class LayoutsManager {
             return;
         }
         const workspacesFrame = storage.get(storage.LAST_SESSION_KEY) || [];
-        const rendererFriendlyFrameConfig = workspacesFrame.map((wc: WorkspaceItem) => {
+        const rendererFriendlyFrameConfig = workspacesFrame.filter((wc: WorkspaceItem) => wc).map((wc: WorkspaceItem) => {
             this.addWorkspaceIds(wc);
             // this.addWindowIds(wc);
             return this._configConverter.convertToRendererConfig(wc);

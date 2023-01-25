@@ -432,6 +432,7 @@ export interface InitFrameArguments {
 
 export interface InitFrameFromSnapshotArguments {
     workspaces: Array<CreateWorkspaceArguments>;
+    keepWorkspaces: string[];
 }
 
 export interface CreateFrameArguments {

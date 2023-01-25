@@ -575,7 +575,8 @@ export class GlueFacade {
         const contentConfigs = operationArguments.workspaces.map((def) => {
             return this._converter.convertToRendererConfig(this.convertCreateWorkspaceArgumentsToWorkspaceItem(def)) as GoldenLayout.Config;
         });
-        const workspaceIds = await manager.initFrameLayout(contentConfigs);
+        
+        const workspaceIds = await manager.initFrameLayout(contentConfigs, operationArguments.keepWorkspaces);
 
         workspaceIds.forEach((workspaceId, i) => {
             const workspaceItem = operationArguments.workspaces[i] as WorkspaceItem;

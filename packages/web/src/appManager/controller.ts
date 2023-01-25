@@ -90,6 +90,7 @@ export class AppManagerController implements LibController {
 
     public async startApplication(appName: string, context?: object, options?: Glue42Web.AppManager.ApplicationStartOptions): Promise<Glue42Web.AppManager.Instance> {
         // reuseId is a hidden property for workspaces-only use
+        // layoutComponentId is a hidden property for global layouts
         // forceChromeTab is a hidden property for extension use only
         const startOptions: ApplicationStartConfig = {
             name: appName,
@@ -102,7 +103,8 @@ export class AppManagerController implements LibController {
             relativeTo: options?.relativeTo,
             relativeDirection: options?.relativeDirection,
             id: (options as any)?.reuseId,
-            forceChromeTab: (options as any)?.forceTab
+            forceChromeTab: (options as any)?.forceTab,
+            layoutComponentId: (options as any)?.layoutComponentId
         };
 
         const openResult = await this.bridge.send<ApplicationStartConfig, InstanceData>("appManager", operations.applicationStart, startOptions);

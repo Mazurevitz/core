@@ -74,4 +74,5 @@ export interface WorkspacesController {
     setMaximizationBoundary(itemId: string, config: Glue42Workspaces.SetMaximizationBoundaryConfig): Promise<void>;
     showWorkspaceLoadingAnimation(workspaceId: string): Promise<void>;
     hideWorkspaceLoadingAnimation(workspaceId: string): Promise<void>;
+    getPlatformFrameId(): Promise<{ id?: string }>
 }

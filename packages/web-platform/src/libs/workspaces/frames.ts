@@ -38,7 +38,7 @@ export class FramesController {
         }
     }
 
-    public async openFrame(newFrameConfig?: Glue42Workspaces.NewFrameConfig | boolean): Promise<FrameInstance> {
+    public async openFrame(newFrameConfig?: Glue42Workspaces.NewFrameConfig | boolean, layoutComponentId?: string): Promise<FrameInstance> {
 
         const providedBounds = typeof newFrameConfig === "object" ? newFrameConfig.bounds ?? {} : {};
 
@@ -60,7 +60,8 @@ export class FramesController {
         const frameData: FrameSessionData = {
             windowId: frameWindowId,
             active: false,
-            isPlatform: false
+            isPlatform: false,
+            layoutComponentId
         };
 
         const options = `left=${openBounds.left},top=${openBounds.top},width=${openBounds.width},height=${openBounds.height}`;
@@ -169,6 +170,10 @@ export class FramesController {
 
     public getPlatformFrameSessionData(): FrameSessionData | undefined {
         return this.sessionController.getAllFrames().find((frame) => frame.isPlatform);
+    }
+
+    public getFrameConfig(frameId: string): FrameSessionData | undefined {
+        return this.sessionController.getAllFrames().find((frame) => frame.windowId === frameId);
     }
 
     private clearAllWorkspaceWindows(frameId: string): void {

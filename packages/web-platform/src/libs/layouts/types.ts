@@ -76,6 +76,7 @@ export interface WindowRawLayoutData extends SaveRequestClientResponse {
     application: string;
     windowId: string;
     initialContext?: any;
+    layoutComponentId?: string;
 }
 
 export interface WorkspaceWindowRawLayoutData extends SaveRequestClientResponse {

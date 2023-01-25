@@ -73,6 +73,7 @@ export interface ApplicationStartConfig {
     relativeTo?: string;
     relativeDirection?: "top" | "left" | "right" | "bottom";
     forceChromeTab?: boolean;
+    layoutComponentId?: string;
 }
 
 export interface BasicInstanceData {

@@ -93,6 +93,7 @@ export interface FrameSessionData {
     windowId: string;
     active: boolean;
     isPlatform: boolean;
+    layoutComponentId?: string;
 }
 
 // #region incoming

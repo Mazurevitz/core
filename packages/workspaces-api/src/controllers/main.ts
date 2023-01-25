@@ -424,6 +424,10 @@ export class MainController implements WorkspacesController {
         return this.shortcutsController.registerShortcut(shortcut, frameId, callback);
     }
 
+    public getPlatformFrameId(): Promise<{id?: string}> {
+        return this.base.getPlatformFrameId();
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private async handleCoreLocalSubscription(config: SubscriptionConfig, levelId: string): Promise<Glue42Workspaces.Unsubscribe> {
         await this.bridge.createCoreEventSubscription();

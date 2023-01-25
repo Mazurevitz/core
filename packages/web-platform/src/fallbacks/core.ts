@@ -9,6 +9,10 @@ export const checkIsOpenerGlue = (): Promise<boolean> => {
         return Promise.resolve(false);
     }
 
+    if (window.opener?.name?.includes("g42-")) {
+        return Promise.resolve(true);
+    }
+
     return new Promise<boolean>((resolve) => {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

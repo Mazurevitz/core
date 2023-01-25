@@ -179,7 +179,7 @@ export class ApplicationsController implements LibController {
             this.setLock(instance.id);
         }
 
-        await this.notifyWindows(appDefinition.createOptions.url, instance, openBounds, config.context, childWindow);
+        await this.notifyWindows(appDefinition.createOptions.url, instance, openBounds, config.context, childWindow, config.layoutComponentId);
 
         if (this.locks[instance.id]) {
             try {
@@ -215,13 +215,14 @@ export class ApplicationsController implements LibController {
 
     }
 
-    private async notifyWindows(url: string, instance: InstanceData, initialBounds: Glue42Web.Windows.Bounds, context?: any, child?: Window): Promise<void> {
+    private async notifyWindows(url: string, instance: InstanceData, initialBounds: Glue42Web.Windows.Bounds, context?: any, child?: Window, layoutComponentId?: string): Promise<void> {
         const windowData: SessionWindowData = {
             windowId: instance.id,
             name: `${instance.applicationName}_${instance.id}`,
             initialUrl: url,
             initialContext: context,
-            initialBounds
+            initialBounds,
+            layoutComponentId
         };
 
         await this.ioc.windowsController.processNewWindow(windowData, context, child);

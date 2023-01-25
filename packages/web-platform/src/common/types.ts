@@ -105,6 +105,7 @@ export interface SessionWindowData {
     initialBounds?: Glue42Web.Windows.Bounds;
     initialUrl?: string;
     initialContext?: any;
+    layoutComponentId?: string;
 }
 
 export interface WorkspaceWindowSession {
@@ -136,6 +137,7 @@ export interface ApplicationStartConfig {
     relativeDirection?: "top" | "left" | "right" | "bottom";
     waitForAGMReady?: boolean;
     forceChromeTab?: boolean;
+    layoutComponentId?: string;
 }
 
 export type SystemOperationTypes = "getEnvironment" | "getBase" | "operationCheck";

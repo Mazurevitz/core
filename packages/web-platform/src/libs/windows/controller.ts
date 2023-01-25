@@ -225,7 +225,8 @@ export class WindowsController implements LibController {
             windowId,
             initialBounds: openBounds,
             initialUrl: config.url,
-            initialContext: config.options?.context
+            initialContext: config.options?.context,
+            layoutComponentId: (config as any).options?.layoutComponentId
         };
 
         const options = `left=${openBounds.left},top=${openBounds.top},width=${openBounds.width},height=${openBounds.height}`;

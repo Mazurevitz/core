@@ -60,6 +60,21 @@ export class LayoutController {
         });
     }
 
+    public async reinit(config: FrameLayoutConfig): Promise<void> {
+        this.reinitWorkspaceConfig(config.workspaceLayout);
+        this.refreshLayoutSize();
+        await Promise.all(config.workspaceConfigs.map(async (c) => {
+            await this.initWorkspaceContents(c.id, c.config, false);
+            this.emitter.raiseEvent("workspace-added", { workspace: store.getById(c.id) });
+        }));
+
+        this._tabObserver.refreshTabsMaxWidth(store.workspaceLayoutHeader.tabsContainer);
+
+        store.workspaceIds.forEach((id) => {
+            this.setupContentLayouts(id);
+        });
+    }
+
     public async addWindow(config: GoldenLayout.ItemConfig, parentId: string): Promise<void> {
         parentId = parentId || idAsString(store.workspaceLayout.root.contentItems[0].getActiveContentItem().config.id);
         const workspace = store.getByContainerId(parentId);
@@ -276,7 +291,7 @@ export class LayoutController {
             },
             id,
             noTabHeader: config?.workspacesOptions?.noTabHeader,
-            title: (config?.workspacesOptions as any)?.title || this._configFactory.getWorkspaceTitle(this._stateResolver.getWorkspaceTitles())
+            title: config?.workspacesOptions?.title || this._configFactory.getWorkspaceTitle(this._stateResolver.getWorkspaceTitles())
         };
 
         let shouldActivateChild = true;
@@ -1189,6 +1204,11 @@ export class LayoutController {
         uiExecutor.showWorkspaceRootItem(workspaceId, this._tabObserver);
     }
 
+    public refreshTabSizes(workspaceId: string): void {
+        const stacks = store.getById(workspaceId)?.layout?.root.getItemsByType("stack") ?? [];
+        stacks.forEach((s: GoldenLayout.Stack) => (s.header as any)?._updateTabSizesWithoutDropdown());
+    }
+
     private resizeComponentCore(componentItem: GoldenLayout.Component, width?: number, height?: number): void {
         const widthToResize = this.validateComponentWidth(componentItem, width);
         const heightToResize = this.validateComponentHeight(componentItem, height);
@@ -1671,11 +1691,7 @@ export class LayoutController {
 
             outerResizeObserver.observe($("#outter-layout-container")[0]);
 
-            (workspaceConfig.content[0] as GoldenLayout.StackConfig).content.forEach((configObj) => {
-                const workspaceId = configObj.id;
-
-                this._layoutComponentsFactory.registerWorkspaceComponent(idAsString(workspaceId));
-            });
+            this.registerWorkspaceComponents(workspaceConfig);
 
             store.workspaceLayout.on("initialised", () => {
                 this.emitter.raiseEvent("workspace-layout-initialised", {});
@@ -1833,8 +1849,28 @@ export class LayoutController {
                 }
             });
 
+            store.workspaceLayout.on("itemDestroyed", (item: GoldenLayout.Component) => {
+                this.emitter.raiseEvent("workspace-tab-destroyed", { workspaceId: idAsString(item.config.id) });
+            });
+
             store.workspaceLayout.init();
         });
+    }
+
+    private reinitWorkspaceConfig(config: GoldenLayout.Config): void {
+        const stackConfig = config.content[0];
+
+        if (stackConfig.type !== "stack") {
+            throw new Error(`Cannot reinitialize the frame with config ${JSON.stringify(config)}`);
+        }
+
+        this.registerWorkspaceComponents(config);
+
+        const outerWorkspaceStack = store.workspaceLayout.root.getItemsByType("stack")[0];
+
+        outerWorkspaceStack.parent.replaceChild(outerWorkspaceStack, stackConfig);
+
+        (outerWorkspaceStack as any)._$destroy();
     }
 
     private setupOuterLayout(): void {
@@ -1844,8 +1880,8 @@ export class LayoutController {
     }
 
     private setupContentLayouts(id: string): void {
-        this.emitter.onContentContainerResized((item) => {
-            const currLayout = store.getById(id).layout;
+        const unsub = this.emitter.onContentContainerResized((item) => {
+            const currLayout = store.getById(id)?.layout;
             if (currLayout) {
                 // The size must be passed in order to handle resizes like maximize of the browser
                 const containerElement = $(`#nestHere${id}`);
@@ -1853,6 +1889,13 @@ export class LayoutController {
                 currLayout.updateSize(bounds.width, bounds.height);
             }
         }, id);
+
+        const workspaceDestroyedUnsub = this.emitter.onWorkspaceTabDestroyed((workspaceId) => {
+            if (workspaceId === id) {
+                unsub();
+                workspaceDestroyedUnsub();
+            }
+        });
     }
 
     private waitForLayout(id: string): Promise<void> {
@@ -2001,5 +2044,13 @@ export class LayoutController {
 
             return ci.contentItems.find(ci => ci.type === "component" && ci.config.componentName === EmptyVisibleWindowName);
         }, undefined);
+    }
+
+    private registerWorkspaceComponents(workspaceConfig: GoldenLayout.Config) {
+        (workspaceConfig.content[0] as GoldenLayout.StackConfig).content.forEach((configObj) => {
+            const workspaceId = configObj.id;
+
+            this._layoutComponentsFactory.registerWorkspaceComponent(idAsString(workspaceId));
+        });
     }
 }

@@ -141,19 +141,23 @@ export class LayoutEventEmitter {
         return this._registry.add("content-item-removed", callback);
     }
 
-    public onWorkspaceLockConfigurationChanged(callback: (itemId: string) => void) {
+    public onWorkspaceLockConfigurationChanged(callback: (itemId: string) => void): UnsubscribeFunction {
         return this._registry.add("workspace-lock-configuration-changed", callback);
     }
 
-    public onContainerLockConfigurationChanged(callback: (item: GoldenLayout.ContentItem) => void) {
+    public onContainerLockConfigurationChanged(callback: (item: GoldenLayout.ContentItem) => void): UnsubscribeFunction {
         return this._registry.add("container-lock-configuration-changed", callback);
     }
 
-    public onWindowLockConfigurationChanged(callback: (data: GoldenLayout.Component) => void) {
+    public onWindowLockConfigurationChanged(callback: (data: GoldenLayout.Component) => void): UnsubscribeFunction {
         return this._registry.add("window-lock-configuration-changed", callback);
     }
 
-    
+    public onWorkspaceTabDestroyed(callback: (workspaceId: string) => void): UnsubscribeFunction {
+        return this._registry.add("workspace-tab-destroyed", callback);
+    }
+
+    public raiseEvent(name: "workspace-tab-destroyed", data: { workspaceId: string }): Promise<void> | Array<Promise<void>>;
     public raiseEvent(name: "window-lock-configuration-changed", data: { item: GoldenLayout.Component }): Promise<void> | Array<Promise<void>>;
     public raiseEvent(name: "container-lock-configuration-changed", data: { item: GoldenLayout.ContentItem }): Promise<void> | Array<Promise<void>>;
     public raiseEvent(name: "workspace-lock-configuration-changed", data: { itemId: string }): Promise<void> | Array<Promise<void>>;

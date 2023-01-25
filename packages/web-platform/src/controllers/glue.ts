@@ -324,7 +324,7 @@ export class GlueController {
             const platformFrame = this.sessionStorage.getPlatformFrame();
 
             this._platformClientWindowId = platformFrame ? platformFrame.windowId :
-                window.name ? window.name : generate();
+                window.name ? window.name : `g42-${generate()}`;
 
             if (!platformFrame) {
                 const platformFrameData: FrameSessionData = { windowId: this.platformWindowId, active: true, isPlatform: true };
@@ -339,7 +339,7 @@ export class GlueController {
         const platformWindowData = this.sessionStorage.getWindowDataByName("Platform");
 
         this._platformClientWindowId = platformWindowData ? platformWindowData.windowId :
-            window.name ? window.name : generate();
+            window.name ? window.name : `g42-${generate()}`;
 
         if (!platformWindowData) {
             this.sessionStorage.saveWindowData({ name: "Platform", windowId: this.platformWindowId });

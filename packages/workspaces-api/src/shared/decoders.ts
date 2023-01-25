@@ -58,7 +58,8 @@ import {
     FrameSnapshotConfig,
     FrameBounds,
     SetMaximizationBoundaryConfig,
-    LoadingAnimationConfig
+    LoadingAnimationConfig,
+    GetPlatformFrameIdResult
 } from "../types/protocol";
 import { WorkspaceEventType, WorkspaceEventAction } from "../types/subscription";
 import { Glue42Workspaces } from "../../workspaces";
@@ -335,7 +336,8 @@ export const restoreWorkspaceDefinitionDecoder: Decoder<Glue42Workspaces.Restore
 export const emptyFrameDefinitionDecoder: Decoder<Glue42Workspaces.EmptyFrameDefinition> = optional(object({
     applicationName: optional(string()),
     frameConfig: optional(newFrameConfigDecoder),
-    context: optional(object())
+    context: optional(object()),
+    layoutComponentId: optional(nonEmptyStringDecoder)
 }));
 
 export const frameInitConfigDecoder: Decoder<Glue42Workspaces.FrameInitializationConfig> = object({
@@ -668,6 +670,10 @@ export const frameBoundsResultDecoder: Decoder<FrameBoundsResult> = object({
 
 export const getWorkspaceIconResultDecoder: Decoder<GetWorkspaceIconResult> = object({
     icon: optional(nonEmptyStringDecoder)
+});
+
+export const getPlatformFrameIdResultDecoder: Decoder<GetPlatformFrameIdResult> = object({
+    id: optional(nonEmptyStringDecoder)
 });
 
 export const resizeConfigDecoder: Decoder<Glue42Workspaces.ResizeConfig> = object({

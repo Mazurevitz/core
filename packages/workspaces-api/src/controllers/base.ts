@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Workspace } from "../models/workspace";
-import { WorkspaceSnapshotResult, WorkspaceCreateConfigProtocol, FrameSummaryResult, AddItemResult, WorkspaceSummariesResult, WorkspaceSummaryResult, SimpleWindowOperationSuccessResult, FrameSnapshotResult, WorkspaceStreamData } from "../types/protocol";
+import { WorkspaceSnapshotResult, WorkspaceCreateConfigProtocol, FrameSummaryResult, AddItemResult, WorkspaceSummariesResult, WorkspaceSummaryResult, SimpleWindowOperationSuccessResult, FrameSnapshotResult, WorkspaceStreamData, GetPlatformFrameIdResult } from "../types/protocol";
 import { OPERATIONS } from "../communication/constants";
 import { FrameCreateConfig, WorkspaceIoCCreateConfig, WindowCreateConfig, ParentCreateConfig } from "../types/ioc";
 import { IoC } from "../shared/ioc";
@@ -21,7 +21,7 @@ export class BaseController {
         private readonly windows: WindowsAPI,
         private readonly contexts: ContextsAPI,
         private readonly layouts: LayoutsAPI,
-    ) { }
+    ) {}
 
     private get bridge(): Bridge {
         return this.ioc.bridge;
@@ -453,5 +453,15 @@ export class BaseController {
 
     public setWorkspaceIcon(workspaceId: string, icon: string): Promise<void> {
         return this.bridge.send<void>(OPERATIONS.setWorkspaceIcon.name, { workspaceId, icon });
+    }
+
+    public async getPlatformFrameId(): Promise<GetPlatformFrameIdResult> {
+        try {
+            const result = await this.bridge.send<GetPlatformFrameIdResult>(OPERATIONS.getPlatformFrameId.name, {});
+
+            return result;
+        } catch (error) {
+            return {}
+        }
     }
 }

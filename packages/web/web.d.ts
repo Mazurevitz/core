@@ -493,6 +493,7 @@ export namespace Glue42Web {
             workspaces: Glue42Workspaces.WorkspaceLayoutComponentState[];
             windowState?: string;
             restoreState?: string;
+            context?: any;
         }
 
         /**

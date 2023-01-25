@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable indent */
 import { LayoutController } from "./layout/controller";
-import { WindowSummary, Workspace, WorkspaceOptionsWithTitle, WorkspaceOptionsWithLayoutName, LoadingStrategy, WorkspaceLayout, Bounds, Constraints, FrameSummary } from "./types/internal";
+import { WindowSummary, Workspace, WorkspaceOptionsWithTitle, WorkspaceOptionsWithLayoutName, LoadingStrategy, WorkspaceLayout, Bounds, FrameSummary, WorkspaceSummary } from "./types/internal";
 import { LayoutEventEmitter } from "./layout/eventEmitter";
 import { IFrameController } from "./iframeController";
 import store from "./state/store";
@@ -14,7 +14,7 @@ import scReader from "./config/startupReader";
 import { idAsString, getAllWindowsFromConfig, getElementBounds, getWorkspaceContextName } from "./utils";
 import { WorkspacesConfigurationFactory } from "./config/factory";
 import { Glue42Web } from "@glue42/web";
-import { LockColumnArguments, LockContainerArguments, LockGroupArguments, LockRowArguments, LockWindowArguments, LockWorkspaceArguments, OpenWorkspaceArguments, ResizeItemArguments, RestoreWorkspaceConfig, WorkspaceDefinition } from "./interop/types";
+import { LockColumnArguments, LockContainerArguments, LockGroupArguments, LockRowArguments, LockWindowArguments, LockWorkspaceArguments, ResizeItemArguments, RestoreWorkspaceConfig } from "./interop/types";
 import startupReader from "./config/startupReader";
 import componentStateMonitor from "./componentStateMonitor";
 import { ConfigConverter } from "./config/converter";
@@ -111,12 +111,19 @@ export class WorkspacesManager {
         return { cleanUp: this.cleanUp };
     }
 
-    public async initFrameLayout(workspaces: GoldenLayout.Config[]): Promise<string[]> {
+    public async initFrameLayout(workspaces: GoldenLayout.Config[], keepWorkspaces?: string[]): Promise<string[]> {
         workspaces.forEach((wsp) => {
             wsp.id = this._configFactory.getId();
         });
         this._layoutsManager.setInitialWorkspaceConfig(workspaces);
-        this._initPromise = this.initLayout();
+        if (this._isLayoutInitialized && !keepWorkspaces?.length) {
+            this._initPromise = this.reinitLayout();
+        } else if (this._isLayoutInitialized && keepWorkspaces?.length) {
+            this._initPromise = this.updateFrameLayoutNaive(workspaces, keepWorkspaces);
+        }
+        else {
+            this._initPromise = this.initLayout();
+        }
 
         await this._initPromise;
 
@@ -1054,6 +1061,45 @@ export class WorkspacesManager {
         }
     }
 
+    private async reinitLayout(): Promise<void> {
+        const workspacesSystemSettings = await this._systemSettings.getSettings();
+        const config = await this._layoutsManager.getInitialConfig();
+
+        this._isLayoutInitialized = true;
+
+        await Promise.all(config.workspaceConfigs.map(c => {
+            return this._glue.contexts.set(getWorkspaceContextName(c.id), c.config?.workspacesOptions?.context || {});
+        }));
+
+        store.workspaceIds.forEach((wid) => {
+            this.discardWorkspaceWithoutClosing(store.getById(wid));
+        });
+
+        await this._controller.reinit({
+            frameId: this._frameId,
+            workspaceLayout: config.workspaceLayout,
+            workspaceConfigs: config.workspaceConfigs,
+            showLoadingIndicator: workspacesSystemSettings?.loadingStrategy?.showDelayedIndicator || false
+        });
+
+        Promise.all(store.workspaceIds.map((wid) => {
+            const loadingStrategy = this._applicationFactory.getLoadingStrategy(workspacesSystemSettings, config.workspaceConfigs[0].config);
+            return this.handleWindows(wid, loadingStrategy);
+        }));
+
+        store.layouts.map((l) => l.layout).filter((l) => l).forEach((l) => this.reportLayoutStructure(l));
+    }
+
+    private async updateFrameLayoutNaive(newWorkspaces: GoldenLayout.Config[], keepWorkspaces: string[]): Promise<void> {
+        const workspaceIdsToClose = store.workspaceIds.filter((wid) => !keepWorkspaces.includes(wid));
+        const workspacesToClose = workspaceIdsToClose.map((wid) => store.getById(wid));
+
+        const closePromise = Promise.all(workspacesToClose.map((wtc) => this.closeWorkspace(wtc)));
+        const createPromise = Promise.all(newWorkspaces.map((nwc) => this.createWorkspace(nwc)));
+
+        await Promise.all([closePromise, createPromise]);
+    }
+
     private async reinitializeWorkspace(id: string, config: GoldenLayout.Config): Promise<void> {
         await this._controller.reinitializeWorkspace(id, config);
 
@@ -1144,6 +1190,7 @@ export class WorkspacesManager {
         this._controller.emitter.onWorkspaceSelectionChanged((workspace, toBack) => {
             this._popupManager.hidePopup();
 
+            this._controller.refreshTabSizes(workspace.id);
             if (!workspace.layout) {
                 this._frameController.selectionChangedDeep([], toBack.map((w) => w.id));
                 this._workspacesEventEmitter.raiseWorkspaceEvent({
@@ -1427,10 +1474,9 @@ export class WorkspacesManager {
         const windowSummaries: WindowSummary[] = [];
         const workspaceSummaries = store.workspaceIds.map((wid) => {
             const workspace = store.getById(wid);
-            windowSummaries.push(...workspace.windows.map(w => this.stateResolver.getWindowSummarySync(w.id)));
-            const snapshot = this.stateResolver.getWorkspaceConfig(wid);
-            const hibernatedSummaries = this.stateResolver.extractWindowSummariesFromSnapshot(snapshot);
-            windowSummaries.push(...hibernatedSummaries);
+            const wrapper = this._wrapperFactory.getWorkspaceWrapper({ workspace, workspaceId: workspace.id });
+
+            windowSummaries.push(...wrapper.windowSummaries);
 
             return this.stateResolver.getWorkspaceSummary(wid);
         });
@@ -1467,24 +1513,40 @@ export class WorkspacesManager {
             throw new Error("Could not find a workspace to close");
         }
 
-        if (workspace.hibernateConfig) {
-            this.closeHibernatedWorkspaceCore(workspace);
-        } else {
-            this.closeWorkspaceCore(workspace);
-        }
+        this.closeWorkspaceCore(workspace);
     }
 
     private closeWorkspaceCore(workspace: Workspace): void {
-        const workspaceSummary = this.stateResolver.getWorkspaceSummary(workspace.id);
-        const windowSummaries = workspace.windows.map((w) => {
-            if (store.getWindowContentItem(w.id)) {
-                return this.stateResolver.getWindowSummarySync(w.id);
-            }
-        }).filter(ws => ws);
+        const workspaceWrapper = this._wrapperFactory.getWorkspaceWrapper({ workspace, workspaceId: workspace.id });
+        const workspaceSummary = workspaceWrapper.summary;
 
-        workspace.windows.forEach((w) => this._frameController.remove(w.id));
+        const windowSummaries = workspaceWrapper.windowSummaries;
 
         const isFrameEmpty = this.checkForEmptyWorkspace(workspace);
+
+        this.disposeOfWindowsInClosingWorkspace(windowSummaries);
+
+        if (isFrameEmpty) {
+            return;
+        }
+        this.raiseWorkspaceClosedEventsInClosingWorkspace(workspaceSummary);
+    }
+
+    private discardWorkspaceWithoutClosing(workspace: Workspace) {
+        const workspaceWrapper = this._wrapperFactory.getWorkspaceWrapper({ workspace, workspaceId: workspace.id });
+
+        const windowSummaries = workspaceWrapper.windowSummaries;
+
+        const workspaceSummary = workspaceWrapper.summary;
+
+        this.disposeOfWindowsInClosingWorkspace(windowSummaries);
+        this.raiseWorkspaceClosedEventsInClosingWorkspace(workspaceSummary);
+        store.removeById(workspace.id);
+    }
+
+    private disposeOfWindowsInClosingWorkspace(windowSummaries: WindowSummary[]) {
+        windowSummaries.forEach((w) => this._frameController.remove(w.itemId));
+
         windowSummaries.forEach((ws) => {
             this._platformCommunicator.notifyFrameWillClose(ws.config.windowId, ws.config.appName).catch((e) => {
                 // Log the error
@@ -1495,45 +1557,12 @@ export class WorkspacesManager {
                     windowSummary: ws
                 }
             });
-        });
-        if (isFrameEmpty) {
-            return;
-        }
-        componentStateMonitor.notifyWorkspaceClosed(workspaceSummary.id);
-
-        this.workspacesEventEmitter.raiseWorkspaceEvent({
-            action: "closed",
-            payload: {
-                workspaceSummary,
-                frameSummary: { id: this._frameId },
-                frameBounds: this.stateResolver.getFrameBounds()
-            }
         });
     }
 
-    private closeHibernatedWorkspaceCore(workspace: Workspace): void {
-        const workspaceSummary = this.stateResolver.getWorkspaceSummary(workspace.id);
-        const snapshot = this.stateResolver.getWorkspaceConfig(workspace.id);
-        const windowSummaries = this.stateResolver.extractWindowSummariesFromSnapshot(snapshot);
-
-        workspace.windows.forEach((w) => this._frameController.remove(w.id));
-
-        const isFrameEmpty = this.checkForEmptyWorkspace(workspace);
-        windowSummaries.forEach((ws) => {
-            this._platformCommunicator.notifyFrameWillClose(ws.config.windowId, ws.config.appName).catch((e) => {
-                // Log the error
-            });
-            this.workspacesEventEmitter.raiseWindowEvent({
-                action: "removed",
-                payload: {
-                    windowSummary: ws
-                }
-            });
-        });
-        if (isFrameEmpty) {
-            return;
-        }
+    private raiseWorkspaceClosedEventsInClosingWorkspace(workspaceSummary: WorkspaceSummary) {
         componentStateMonitor.notifyWorkspaceClosed(workspaceSummary.id);
+
         this.workspacesEventEmitter.raiseWorkspaceEvent({
             action: "closed",
             payload: {
@@ -1576,15 +1605,7 @@ export class WorkspacesManager {
         // Closing all workspaces except the last one
         if (store.layouts.length === 1) {
             if (this._isLayoutInitialized && (window as any).glue42core.isPlatformFrame) {
-                const newId = this._configFactory.getId();
-
-                this._controller.addWorkspace(newId, undefined).then(async () => {
-                    await this.handleOnWorkspaceAddedWithSnapshot(store.getById(newId));
-                    this.checkForEmptyWorkspace(workspace);
-                }).catch(() => {
-                    // Can happen if the workspace has already been closed
-                    // e.g the closing of the last window in a workspace could potentially trigger this behavior
-                });
+                this.replaceLastWorkspaceWithEmpty(workspace);
 
                 return false;
             } else if (this._isLayoutInitialized) {
@@ -1604,6 +1625,25 @@ export class WorkspacesManager {
         }
 
         return false;
+    }
+
+    private replaceLastWorkspaceWithEmpty(lastWorkspace: Workspace) {
+        const newId = this._configFactory.getId();
+        const emptyWorkspaceConfig = this._configFactory.getEmptyWorkspaceConfig();
+        const lastWorkspaceWrapper = this._wrapperFactory.getWorkspaceWrapper({ workspace: lastWorkspace, workspaceId: lastWorkspace.id });
+        const titlesWithoutLastWorkspace = this.stateResolver.getWorkspaceTitles().filter(t => t !== lastWorkspaceWrapper.title);
+        const titleForEmptyWorkspace = this._configFactory.getWorkspaceTitle(titlesWithoutLastWorkspace);
+
+        // Ensuring that the title will be Untitled 1
+        emptyWorkspaceConfig.workspacesOptions.title = titleForEmptyWorkspace;
+
+        this._controller.addWorkspace(newId, this._configFactory.getEmptyWorkspaceConfig()).then(async () => {
+            await this.handleOnWorkspaceAddedWithSnapshot(store.getById(newId));
+            this.checkForEmptyWorkspace(lastWorkspace);
+        }).catch(() => {
+            // Can happen if the workspace has already been closed
+            // e.g the closing of the last window in a workspace could potentially trigger this behavior
+        });
     }
 
     private waitForFrameLoaded(itemId: string): Promise<void> {

@@ -48,6 +48,7 @@ import {
     frameSnapshotConfigDecoder,
     setMaximizationBoundaryConfigDecoder,
     loadingAnimationConfigDecoder,
+    getPlatformFrameIdResultDecoder,
     workspacesImportLayoutsDecoder
 } from "../shared/decoders";
 import { ControlOperation, StreamOperation } from "../types/protocol";
@@ -99,7 +100,8 @@ type OperationsTypes = "isWindowInWorkspace" |
     "unregisterShortcut" |
     "initFrame" |
     "showLoadingAnimation" |
-    "hideLoadingAnimation";
+    "hideLoadingAnimation" |
+    "getPlatformFrameId";
 type OutgoingMethodTypes = "control" | "frameStream" | "workspaceStream" | "containerStream" | "windowStream";
 export type IncomingMethodTypes = "control";
 
@@ -188,5 +190,6 @@ export const OPERATIONS: { [key in OperationsTypes]: ControlOperation } = {
     registerShortcut: { name: "registerShortcut", argsDecoder: shortcutConfigDecoder, resultDecoder: voidResultDecoder },
     unregisterShortcut: { name: "unregisterShortcut", argsDecoder: shortcutConfigDecoder, resultDecoder: voidResultDecoder },
     showLoadingAnimation: { name: "showLoadingAnimation", argsDecoder: loadingAnimationConfigDecoder, resultDecoder: voidResultDecoder },
-    hideLoadingAnimation: { name: "hideLoadingAnimation", argsDecoder: loadingAnimationConfigDecoder, resultDecoder: voidResultDecoder }
+    hideLoadingAnimation: { name: "hideLoadingAnimation", argsDecoder: loadingAnimationConfigDecoder, resultDecoder: voidResultDecoder },
+    getPlatformFrameId: { name: "getPlatformFrameId", resultDecoder: getPlatformFrameIdResultDecoder }
 };

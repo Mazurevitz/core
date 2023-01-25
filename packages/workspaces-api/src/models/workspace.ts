@@ -185,7 +185,12 @@ export class Workspace implements Glue42Workspaces.Workspace {
 
         const workspaces = await getData(this).frame.workspaces();
 
-        const shouldCloseFrame = workspaces.length === 1 && workspaces.every((wsp) => wsp.id === this.id);
+        // should close the frame only if the frame is NOT a platform
+        const platformFrameId = (await controller.getPlatformFrameId()).id;
+
+        const shouldCloseFrame = workspaces.length === 1 && 
+            workspaces.every((wsp) => wsp.id === this.id) &&
+            platformFrameId !== this.frame.id;
 
         if (shouldCloseFrame) {
             return this.frame.close();

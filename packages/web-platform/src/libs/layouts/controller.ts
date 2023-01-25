@@ -12,9 +12,9 @@ import logger from "../../shared/logger";
 import { PromiseWrap } from "../../shared/promisePlus";
 import { objEqual } from "../../shared/utils";
 import { WindowsController } from "../windows/controller";
-import { allLayoutsFullConfigDecoder, allLayoutsSummariesResultDecoder, getAllLayoutsConfigDecoder, layoutsImportConfigDecoder, layoutsOperationTypesDecoder, optionalSimpleLayoutResult, permissionStateResultDecoder, restoreLayoutConfigDecoder, restoreOptionsDecoder, saveLayoutConfigDecoder, saveRequestClientResponseDecoder, rawWindowsLayoutDataRequestConfigDecoder, windowsRawLayoutDataDecoder, simpleAvailabilityResultDecoder, simpleLayoutConfigDecoder } from "./decoders";
+import { allLayoutsFullConfigDecoder, allLayoutsSummariesResultDecoder, getAllLayoutsConfigDecoder, layoutsImportConfigDecoder, layoutsOperationTypesDecoder, optionalSimpleLayoutResult, permissionStateResultDecoder, restoreLayoutConfigDecoder, saveLayoutConfigDecoder, saveRequestClientResponseDecoder, rawWindowsLayoutDataRequestConfigDecoder, windowsRawLayoutDataDecoder, simpleAvailabilityResultDecoder, simpleLayoutConfigDecoder } from "./decoders";
 import { IdbLayoutsStore } from "./idbStore";
-import { AllLayoutsFullConfig, AllLayoutsSummariesResult, GetAllLayoutsConfig, LayoutsImportConfig, LayoutsOperationTypes, OptionalSimpleLayoutResult, RestoreLayoutConfig, SaveLayoutConfig, RawWindowsLayoutDataRequestConfig, SaveRequestClientResponse, SimpleLayoutConfig, SimpleLayoutResult, WindowRawLayoutData, PermissionStateResult, SimpleAvailabilityResult, WindowsRawLayoutData, WorkspaceWindowRawLayoutData } from "./types";
+import { AllLayoutsFullConfig, AllLayoutsSummariesResult, GetAllLayoutsConfig, LayoutsImportConfig, LayoutsOperationTypes, OptionalSimpleLayoutResult, RestoreLayoutConfig, SaveLayoutConfig, RawWindowsLayoutDataRequestConfig, SaveRequestClientResponse, SimpleLayoutConfig, SimpleLayoutResult, WindowRawLayoutData, PermissionStateResult, SimpleAvailabilityResult, WindowsRawLayoutData } from "./types";
 
 export class LayoutsController implements LibController {
 
@@ -252,7 +252,8 @@ export class LayoutsController implements LibController {
             name: windowData.name,
             application: instanceData ? instanceData.applicationName : defaultNoAppWindowComponentAppName,
             initialContext: windowData.initialContext,
-            windowId: windowData.windowId
+            windowId: windowData.windowId,
+            layoutComponentId: windowData.layoutComponentId
         }
     }
 
@@ -270,7 +271,8 @@ export class LayoutsController implements LibController {
             name: windowData.name,
             application: instanceData ? instanceData.applicationName : defaultNoAppWindowComponentAppName,
             initialContext: windowData.initialContext,
-            windowId: windowData.windowId
+            windowId: windowData.windowId,
+            layoutComponentId: windowData.layoutComponentId
         }
     }
 

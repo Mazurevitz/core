@@ -1,7 +1,7 @@
 import GoldenLayout, { Container } from "@glue42/golden-layout";
 import { generate } from "shortid";
 import { ControlArguments } from "../interop/types";
-import { ColumnItem, GroupItem, RowItem, WindowItem, WorkspaceItem } from "../types/internal";
+import { ColumnItem, GroupItem, RowItem, WindowItem, WindowSummary, WorkspaceItem } from "../types/internal";
 
 export const idAsString = (id: string | string[]) => Array.isArray(id) ? id[0] : id;
 
@@ -171,4 +171,24 @@ export const isOperationSupported = (operation: ControlArguments["operation"]): 
         default:
             return returnIsNotSupported(operation);
     }
+}
+
+export const extractWindowSummariesFromSnapshot = (snapshot: GoldenLayout.Config): WindowSummary[] => {
+    const result: WindowSummary[] = [];
+    const getAllWindows = (item: GoldenLayout.ItemConfig, parentId: string): void => {
+        if (item.type === "component") {
+            result.push({
+                itemId: idAsString(item.id),
+                parentId,
+                config: item.workspacesConfig as any
+            });
+            return;
+        }
+
+        item.content.forEach((c) => getAllWindows(c, idAsString(item.id)));
+    };
+
+    getAllWindows(snapshot as unknown as GoldenLayout.ItemConfig, undefined);
+
+    return result;
 }

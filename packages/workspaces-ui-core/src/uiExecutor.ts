@@ -409,6 +409,10 @@ export class WorkspacesUIExecutor {
         return `nestHere${workspaceId}`;
     }
 
+    public getWorkspaceLayoutContainer(workspaceId: string): HTMLElement {
+        return $(`#${this.getWorkspaceLayoutContainerId(workspaceId)}`)[0];
+    }
+
     private hasTransition(element: HTMLElement): boolean {
         const transition = window.getComputedStyle(element, null).getPropertyValue("transition");
 

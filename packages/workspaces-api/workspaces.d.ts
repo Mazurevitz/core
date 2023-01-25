@@ -672,6 +672,11 @@ export namespace Glue42Workspaces {
          * Optional context which will be passed to the initialization callback
          */
         context?: object;
+
+        /**      
+         * Optional the id of the layout component which is being restored
+         */
+        layoutComponentId?: string;
     }
 
     export interface FrameInitializationConfig {

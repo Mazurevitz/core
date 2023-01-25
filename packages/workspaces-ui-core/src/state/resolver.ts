@@ -193,26 +193,6 @@ export class LayoutStateResolver {
         };
     }
 
-    public extractWindowSummariesFromSnapshot(snapshot: GoldenLayout.Config): WindowSummary[] {
-        const result: WindowSummary[] = [];
-        const getAllWindows = (item: GoldenLayout.ItemConfig, parentId: string): void => {
-            if (item.type === "component") {
-                result.push({
-                    itemId: idAsString(item.id),
-                    parentId,
-                    config: item.workspacesConfig as any
-                });
-                return;
-            }
-
-            item.content.forEach((c) => getAllWindows(c, idAsString(item.id)));
-        };
-
-        getAllWindows(snapshot as unknown as GoldenLayout.ItemConfig, undefined);
-
-        return result;
-    }
-
     public isWindowLoaded(id: string | string[]): boolean {
         return this.frameController.hasFrame(idAsString(id));
     }

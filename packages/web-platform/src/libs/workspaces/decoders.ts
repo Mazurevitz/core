@@ -792,8 +792,10 @@ export const workspaceIconDecoder: Decoder<WorkspaceIconResult> = object({
 });
 
 export const emptyFrameDefinitionDecoder: Decoder<Glue42Workspaces.EmptyFrameDefinition> = object({
+    applicationName: optional(string()),
     frameConfig: optional(newFrameConfigDecoder),
-    context: optional(object())
+    context: optional(object()),
+    layoutComponentId: optional(nonEmptyStringDecoder)
 });
 
 export const restoreWorkspaceDefinitionDecoder: Decoder<Glue42Workspaces.RestoreWorkspaceDefinition> = object({

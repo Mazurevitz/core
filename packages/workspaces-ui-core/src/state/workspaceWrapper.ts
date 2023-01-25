@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import GoldenLayout, { WorkspacesOptions } from "@glue42/golden-layout";
 import store from "./store";
-import { getElementBounds, idAsString } from "../utils";
-import { Bounds, LockWorkspaceConfig, Workspace, WorkspaceOptionsWithLayoutName, WorkspaceSummary } from "../types/internal";
+import { extractWindowSummariesFromSnapshot, getElementBounds, idAsString } from "../utils";
+import { Bounds, LockWorkspaceConfig, WindowSummary, Workspace, WorkspaceOptionsWithLayoutName, WorkspaceSummary } from "../types/internal";
 import { DefaultMaxSize, DefaultMinSize, EmptyVisibleWindowName } from "../utils/constants";
 import componentStateMonitor from "../componentStateMonitor";
 import { WorkspacesWrapperFactory } from "./factory";
@@ -351,6 +351,22 @@ export class WorkspaceWrapper {
         const items = layout.root.getItemsById("__glMaximised");
 
         return items.length > 0;
+    }
+
+    public get windowSummaries(): WindowSummary[] {
+        let windowSummaries: WindowSummary[] = [];
+        if (this.isHibernated) {
+            const snapshot = this.config;
+            windowSummaries = extractWindowSummariesFromSnapshot(snapshot);
+        } else {
+            windowSummaries = this.workspace.windows.map((w) => {
+                if (store.getWindowContentItem(w.id)) {
+                    return this.getWindowSummary(w.id)
+                }
+            }).filter(ws => ws);
+        }
+
+        return windowSummaries;
     }
 
     public getMaximizedItemInRoot(layout?: GoldenLayout): GoldenLayout.ContentItem {

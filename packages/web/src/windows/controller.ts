@@ -81,6 +81,7 @@ export class WindowsController implements LibController {
     private async open(name: string, url: string, options?: Glue42Web.Windows.Settings): Promise<Glue42Web.Windows.WebWindow> {
         nonEmptyStringDecoder.runWithException(name);
         nonEmptyStringDecoder.runWithException(url);
+        // layoutComponentId is a hidden property for global layouts
         const settings = windowOpenSettingsDecoder.runWithException(options);
 
         const windowSuccess = await this.bridge.send<OpenWindowConfig, CoreWindowData>("windows", operations.openWindow, { name, url, options: settings });

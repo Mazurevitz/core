@@ -256,6 +256,16 @@ export class WorkspacesConfigurationFactory {
         return savedConfig;
     }
 
+    public getEmptyWorkspaceConfig(title?: string): GoldenLayout.Config {
+        return {
+            ...this.getDefaultWorkspaceSettings(),
+            content: [],
+            workspacesOptions: {
+                title
+            }
+        };
+    }
+
     private createWindowConfigurationCore(id?: string): GoldenLayout.ComponentConfig {
         return {
             workspacesConfig: {},
