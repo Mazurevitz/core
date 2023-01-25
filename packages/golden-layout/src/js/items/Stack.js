@@ -70,7 +70,7 @@ lm.utils.copy(lm.items.Stack.prototype, {
 			return memoizedConstraints.minWidth;
 		}
 		const elementMinWidth = this.config.workspacesConfig.minWidth || this.layoutManager.config.dimensions.minItemWidth;
-		const result =  this.contentItems.reduce((minWidth, ci) => {
+		const result = this.contentItems.reduce((minWidth, ci) => {
 			return Math.max(minWidth, ci.getMinWidth() || this.layoutManager.config.dimensions.minItemWidth);
 		}, elementMinWidth);
 
@@ -254,6 +254,8 @@ lm.utils.copy(lm.items.Stack.prototype, {
 				this._activeContentItem = null;
 			}
 		}
+
+		this._syncActiveItemIndex();
 
 		this._$validateClosability();
 		this.emitBubblingEvent('stateChanged');
@@ -714,5 +716,12 @@ lm.utils.copy(lm.items.Stack.prototype, {
 		}
 
 		return this.contentItems[Math.max(index - 1, 0)];
+	},
+	_syncActiveItemIndex: function () {
+		var index = lm.utils.indexOf(this._activeContentItem, this.contentItems);
+
+		if (index > -1) {
+			this.config.activeItemIndex = index;
+		}
 	}
 });

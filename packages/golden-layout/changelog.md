@@ -1,3 +1,5 @@
+2.3.8
+fix: activeItemIndex becomes out of sync when closing a component which is not active
 2.3.7
 feat: added unregisterComponent to be able to cleanup the state after closing a component
 fix: tabs can't be moved without extracting
