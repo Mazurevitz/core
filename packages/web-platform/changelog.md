@@ -1,3 +1,5 @@
+1.19.1
+fix: reverted window.opener.name discovery of clients
 1.19.0
 feat: adds support for layoutsComponentId
 feat: platform id now has g42- prefix
