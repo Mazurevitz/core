@@ -49,7 +49,7 @@ export class FramesController {
             height: providedBounds.height ?? this.defaultBounds.height
         };
 
-        const frameWindowId = typeof newFrameConfig === "object" && newFrameConfig?.frameId ? newFrameConfig.frameId : generate();
+        const frameWindowId = typeof newFrameConfig === "object" && newFrameConfig?.frameId ? newFrameConfig.frameId : `g42-${generate()}`;
 
         const allExistingFrames = this.sessionController.getAllFrames();
 

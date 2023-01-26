@@ -3,10 +3,12 @@ import { defaultOpenerTimeoutMs } from "../common/defaultConfig";
 
 export const checkIsOpenerGlue = (): Promise<boolean> => {
 
-    // check if going to connect to an extension platform
-
     if (!window.opener) {
         return Promise.resolve(false);
+    }
+
+    if (window.name.includes("g42-")) {
+        return Promise.resolve(true);
     }
 
     return new Promise<boolean>((resolve) => {

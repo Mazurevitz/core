@@ -38,7 +38,7 @@ export const defaultTargetString = "*";
 
 export const defaultFetchTimeoutMs = 3000;
 
-export const defaultOpenerTimeoutMs = 3000;
+export const defaultOpenerTimeoutMs = 1000;
 
 export const defaultPreferredDiscoveryIntervalMS = 15000;
 
