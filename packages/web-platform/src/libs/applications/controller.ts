@@ -271,7 +271,7 @@ export class ApplicationsController implements LibController {
                 const windowId: string = helloMsg.windowId;
                 const title: string = foundApp.title;
 
-                PromiseWrap<void>(() => this.glueController.callWindow<WindowTitleConfig, void>("windows", this.ioc.windowsController.setTitleOperation, { windowId, title }, windowId), 20000)
+                PromiseWrap<void>(() => this.glueController.callWindow<WindowTitleConfig, void>("windows", this.ioc.windowsController.setTitleOperation, { windowId, title }, { windowId }), 20000)
                     .catch((err) => this.logger?.trace(`[${commandId}] error while setting the application instance title: ${err.message}`));
             }
         }

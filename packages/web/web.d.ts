@@ -1251,6 +1251,12 @@ export namespace Glue42Web {
               * If not provided, Intents API will use the default Intents Resolver UI application to handle raising an intent with multiple handlers
               */
              intentsResolverAppName?: string;
+
+             /**
+              * Timeout to wait for response from Intents Resolver UI 
+              * @default 60000
+              */
+             methodResponseTimeoutMs?: number;
         }
 
         interface ResolverIntentHandler {
@@ -1412,6 +1418,11 @@ export namespace Glue42Web {
              * Start up options that will be used when a new instance of an application needs to be started to handle the intent request.
              */
             readonly options?: AppManager.ApplicationStartOptions;
+            /*
+            * List of Intent Handlers which will be provided to the user via Intents Resolver UI. If the Resolver is disabled or there's only one handler
+            * in the array, raise() will resolve with the first application or instance in the collection.
+            */
+            readonly handlers?: Glue42Web.Intents.IntentHandler[];
         }
 
         /**

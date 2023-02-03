@@ -225,6 +225,18 @@ export class WorkspacesController implements LibController {
         return this.settings;
     }
 
+    public async getWorkspaceWindowFrameBounds(config: SimpleItemConfig, commandId: string): Promise<FrameBoundsResult> {
+        this.logger?.trace(`[${commandId}] handling getWorkspaceWindowFrameBounds request with config ${JSON.stringify(config)}`);
+
+        const frame = await this.framesController.getFrameInstance({ itemId: config.itemId });
+
+        const frameWindowBounds = await this.glueController.callWindow<SimpleWindowCommand, FrameWindowBoundsResult>("windows", this.ioc.windowsController.getFrameBoundsOperation, { windowId: frame.windowId }, { windowId: frame.windowId });
+
+        this.logger?.trace(`[${commandId}] getWorkspaceWindowFrameBounds completed`);
+
+        return { bounds: frameWindowBounds.bounds };
+    }
+
     private async handleOperationCheck(config: OperationCheckConfig): Promise<OperationCheckResult> {
         const operations = Object.keys(this.operations);
 
@@ -541,7 +553,7 @@ export class WorkspacesController implements LibController {
                 relative: config.relative
             };
 
-            await this.glueController.callWindow<WindowMoveResizeConfig, void>("windows", this.ioc.windowsController.moveResizeOperation, resizeConfig, targetedFrame.windowId);
+            await this.glueController.callWindow<WindowMoveResizeConfig, void>("windows", this.ioc.windowsController.moveResizeOperation, resizeConfig, { windowId: targetedFrame.windowId });
 
             this.logger?.trace(`[${commandId}] window resize responded with success, returning to caller`);
 
@@ -789,21 +801,9 @@ export class WorkspacesController implements LibController {
 
         const frame = await this.framesController.getFrameInstance({ frameId: config.itemId });
 
-        const frameWindowBounds = await this.glueController.callWindow<SimpleWindowCommand, FrameWindowBoundsResult>("windows", this.ioc.windowsController.getFrameBoundsOperation, { windowId: frame.windowId }, frame.windowId);
+        const frameWindowBounds = await this.glueController.callWindow<SimpleWindowCommand, FrameWindowBoundsResult>("windows", this.ioc.windowsController.getFrameBoundsOperation, { windowId: frame.windowId }, { windowId: frame.windowId });
 
         this.logger?.trace(`[${commandId}] getFrameBounds completed`);
-
-        return { bounds: frameWindowBounds.bounds };
-    }
-
-    private async getWorkspaceWindowFrameBounds(config: SimpleItemConfig, commandId: string): Promise<FrameBoundsResult> {
-        this.logger?.trace(`[${commandId}] handling getWorkspaceWindowFrameBounds request with config ${JSON.stringify(config)}`);
-
-        const frame = await this.framesController.getFrameInstance({ itemId: config.itemId });
-
-        const frameWindowBounds = await this.glueController.callWindow<SimpleWindowCommand, FrameWindowBoundsResult>("windows", this.ioc.windowsController.getFrameBoundsOperation, { windowId: frame.windowId }, frame.windowId);
-
-        this.logger?.trace(`[${commandId}] getWorkspaceWindowFrameBounds completed`);
 
         return { bounds: frameWindowBounds.bounds };
     }
@@ -846,7 +846,7 @@ export class WorkspacesController implements LibController {
             relative: config.relative
         };
 
-        await this.glueController.callWindow<WindowMoveResizeConfig, void>("windows", this.ioc.windowsController.moveResizeOperation, moveConfig, frame.windowId);
+        await this.glueController.callWindow<WindowMoveResizeConfig, void>("windows", this.ioc.windowsController.moveResizeOperation, moveConfig, { windowId: frame.windowId });
 
         this.logger?.trace(`[${commandId}] frame with id ${frame.windowId} was successfully moved, responding to caller`);
     }
@@ -884,7 +884,7 @@ export class WorkspacesController implements LibController {
         // the response will be undefined when communicating with an older Glue Web client which cannot service this message 
         const saveRequestResponse = await PromiseWrap<SaveRequestClientResponse>(async () => {
             try {
-                const clientResponse = await this.glueController.callWindow<RawWindowsLayoutDataRequestConfig, SaveRequestClientResponse>("layouts", this.ioc.layoutsController.operations.clientSaveRequest, requestConfig, windowId)
+                const clientResponse = await this.glueController.callWindow<RawWindowsLayoutDataRequestConfig, SaveRequestClientResponse>("layouts", this.ioc.layoutsController.operations.clientSaveRequest, requestConfig, { windowId })
                 return clientResponse;
             } catch (error) {
                 return {};

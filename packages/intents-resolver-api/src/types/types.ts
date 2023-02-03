@@ -10,7 +10,7 @@ export interface IntentsResolver {
 }
 
 export interface ResolverIntentHandler {
-    applicationName?: string;
+    applicationName: string;
     applicationIcon?: string;
     instanceId?: string;
 }

@@ -1,30 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Glue42Core } from "@glue42/core";
 import { IoC } from "../shared/ioc";
-import { IntentResolverResponse as IntentsResolverResponse, IntentsResolverStartContext, LibController, LibDomains, OperationCheckConfig, OperationCheckResult, SimpleItemIdRequest, WorkspaceFrameBoundsResult } from "../shared/types";
+import { IntentRequestWithResolverInfo, IsRaiseOperationSupported, LibController, OperationCheckConfig, OperationCheckResult } from "../shared/types";
 import { Glue42Web } from "../../web";
 import { GlueBridge } from "../communication/bridge";
 import { UnsubscribeFunction } from "callback-registry";
-import { intentsOperationTypesDecoder, raiseRequestDecoder, findFilterDecoder, AddIntentListenerDecoder, intentResolverResponseDecoder } from "../shared/decoders";
-import { IntentsResolverResponsePromise, operations, WrappedIntentFilter, WrappedIntents } from "./protocol";
-import { AppManagerController } from '../appManager/controller';
-import shortid from 'shortid';
-import { WindowsController } from '../windows/controller';
-import { GLUE42_FDC3_INTENTS_METHOD_PREFIX, INTENTS_RESOLVER_APP_NAME, INTENTS_RESOLVER_HEIGHT, INTENTS_RESOLVER_INTEROP_PREFIX, INTENTS_RESOLVER_WIDTH } from './constants';
-import { systemOperations } from "../shared/systemOperations";
+import { intentsOperationTypesDecoder, raiseRequestDecoder, findFilterDecoder, AddIntentListenerDecoder } from "../shared/decoders";
+import { operations, WrappedIntentFilter, WrappedIntents } from "./protocol";
+import { ADDITIONAL_BRIDGE_OPERATION_TIMEOUT, DEFAULT_RESOLVER_RESPONSE_TIMEOUT, GLUE42_FDC3_INTENTS_METHOD_PREFIX, INTENTS_RESOLVER_APP_NAME } from './constants';
+import { LegacyIntentsHelper } from './legacyHelper';
+import { systemOperations } from '../shared/systemOperations';
 
 export class IntentsController implements LibController {
     private bridge!: GlueBridge;
     private logger!: Glue42Web.Logger.API;
     private interop!: Glue42Core.AGM.API;
-    private appManager!: AppManagerController;
+    private legacyIntentsController!: LegacyIntentsHelper;
     private myIntents = new Set<string>();
 
     private useIntentsResolverUI: boolean = true;
     private intentsResolverAppName!: string;
-
-    private windowsManager!: WindowsController;
-    private intentsResolverResponsePromises: { [instanceId: string]: IntentsResolverResponsePromise } = {};
+    private intentResolverResponseTimeout!: number;
 
     private unregisterIntentPromises: Promise<void>[] = [];
 
@@ -37,9 +33,7 @@ export class IntentsController implements LibController {
 
         this.interop = coreGlue.interop;
 
-        this.appManager = ioc.appManagerController;
-
-        this.windowsManager = ioc.windowsController;
+        this.legacyIntentsController = ioc.legacyIntentsHelper;
 
         this.checkIfIntentsResolverIsEnabled(ioc.config);
 
@@ -81,67 +75,56 @@ export class IntentsController implements LibController {
     }
 
     private async raise(request: string | Glue42Web.Intents.IntentRequest): Promise<Glue42Web.Intents.IntentResult> {
-        let intentDecoder = raiseRequestDecoder.runWithException(request);
+        const validatedIntentRequest = raiseRequestDecoder.runWithException(request);
 
-        const intent: Glue42Web.Intents.IntentRequest = typeof intentDecoder === "string"
-            ? { intent: intentDecoder }
-            : intentDecoder;
+        const intentRequest: Glue42Web.Intents.IntentRequest = typeof validatedIntentRequest === "string"
+            ? { intent: validatedIntentRequest }
+            : validatedIntentRequest;
 
         await Promise.all(this.unregisterIntentPromises);
 
-        if (intent.target) {
-            this.logger.trace(`Intents Resolver won't be used. Target is provided in Intent Request - ${JSON.stringify(intent)}`);
+        const requestWithResolverInfo = this.buildIntentRequestWithResolverInfo(intentRequest);
 
-            return this.raiseIntent(intent);
+        const isRaiseOperationSupported = await this.isRaiseOperationSupported();
+
+        if (!isRaiseOperationSupported.supported) {
+            this.logger.warn(`${isRaiseOperationSupported.reason}. Invoking legacy raise method`);
+
+            return this.legacyIntentsController.raise(requestWithResolverInfo, this.find.bind(this));
         }
 
-        if (!this.useIntentsResolverUI) {
-            this.logger.trace(`Intent Resolver is disabled. Raising intent to first found handler`);
+        this.logger.trace(`Sending raise request to the platform: ${JSON.stringify(request)} and method response timeout of ${this.intentResolverResponseTimeout}ms`);
 
-            return this.raiseIntent(intent);
-        }
+        const response = await this.bridge.send<IntentRequestWithResolverInfo, Glue42Web.Intents.IntentResult>("intents", operations.raise, requestWithResolverInfo, { methodResponseTimeoutMs: this.intentResolverResponseTimeout + ADDITIONAL_BRIDGE_OPERATION_TIMEOUT });
 
-        const intentsResolverApp = this.appManager.getApplication(this.intentsResolverAppName);
-
-        if (!intentsResolverApp) {
-            this.logger.trace(`Intent Resolver Application with name ${this.intentsResolverAppName} not found. Intents Resolver won't be used for handling raised intents`);
-
-            return this.raiseIntent(intent);
-        }
-
-        const hasOneHandler = (await this.find(intent.intent))[0].handlers.length === 1;
-
-        if (hasOneHandler) {
-            this.logger.trace(`Intents Resolver won't be used - intent has only one handler.`);
-
-            return this.raiseIntent(intent);
-        }
-
-        const registeredMethod = await this.registerIntentResolverMethod();
-
-        this.logger.trace(`Registered interop method ${registeredMethod}`);
-
-        const resolverInstance = await this.openIntentResolverApplication(intent, registeredMethod);
-
-        const { handler } = await this.intentsResolverResponsePromises[resolverInstance.id].promise;
-
-        this.stopIntensResolverInstance(resolverInstance.id);
-
-        const target = handler.type === "app"
-            ? { app: handler.applicationName }
-            : { instance: handler.instanceId };
-
-        this.logger.trace(`Intent handler chosen by the user: ${JSON.stringify(target)}`);
-
-        const data = { ...intent, target };
-
-        return this.raiseIntent(data);
+        return response;
     }
 
-    private async raiseIntent(requestObj: Glue42Web.Intents.IntentRequest): Promise<Glue42Web.Intents.IntentResult> {
-        const result = this.bridge.send<Glue42Web.Intents.IntentRequest, Glue42Web.Intents.IntentResult>("intents", operations.raiseIntent, requestObj);
+    private buildIntentRequestWithResolverInfo(request: Glue42Web.Intents.IntentRequest): IntentRequestWithResolverInfo {
+        return {
+            intentRequest: request,
+            resolverConfig: {
+                enabled: this.useIntentsResolverUI,
+                appName: this.intentsResolverAppName,
+                waitResponseTimeout: this.intentResolverResponseTimeout
+            }
+        }
+    }
 
-        return result;
+    private async isRaiseOperationSupported(): Promise<IsRaiseOperationSupported> {
+        try {
+            const { isSupported } = await this.bridge.send<OperationCheckConfig, OperationCheckResult>("intents", systemOperations.operationCheck, { operation: "raise" });
+
+            return {
+                supported: isSupported,
+                reason: isSupported ? "" : `The platform of this client is outdated and does not support "raise" operation`
+            };
+        } catch (error) {
+            return {
+                supported: false,
+                reason: `The platform of this client is outdated and does not support "operationCheck" command`
+            };
+        };
     }
 
     private async all(): Promise<Glue42Web.Intents.Intent[]> {
@@ -274,177 +257,14 @@ export class IntentsController implements LibController {
         return result.intents;
     }
 
-    private createResponsePromise(intent: string, instanceId: string, methodName: string): void {
-        let resolve: (arg: IntentsResolverResponse) => void = () => {};
-        let reject: (reason: string) => void = () => {};
-
-        const promise = new Promise<IntentsResolverResponse>((res, rej) => {
-            resolve = res;
-            reject = rej;
-        });
-
-        this.intentsResolverResponsePromises[instanceId] = { intent, resolve, reject, promise, methodName };
-    }
-
-    private resolverResponseHandler(args: any, callerId: Glue42Web.Interop.Instance): void {
-        const response = intentResolverResponseDecoder.run(args);
-
-        const instanceId = callerId.instance;
-
-        if (!response.ok) {
-            this.logger.trace(`Intent Resolver sent invalid response. Error: ${response.error}`);
-
-            this.intentsResolverResponsePromises[instanceId!].reject(response.error.message);
-
-            this.stopIntensResolverInstance(instanceId!);
-
-            return;
-        }
-
-        this.intentsResolverResponsePromises[instanceId!].resolve(response.result);
-    }
-
-    private stopIntensResolverInstance(instanceId: string): void {
-        const appInstances = this.appManager.getApplication(this.intentsResolverAppName).instances;
-
-        const searchedInstance = appInstances.find((inst: Glue42Web.AppManager.Instance) => inst.id === instanceId);
-
-        if (!searchedInstance) {
-            return;
-        }
-
-        searchedInstance.stop().catch(err => this.logger.error(err));
-    }
-
-    private async registerIntentResolverMethod(): Promise<string> {
-        const methodName = INTENTS_RESOLVER_INTEROP_PREFIX + shortid();
-
-        await this.interop.register(methodName, this.resolverResponseHandler.bind(this));
-
-        return methodName;
-    }
-
-    private async openIntentResolverApplication(requestObj: Glue42Web.Intents.IntentRequest, methodName: string): Promise<Glue42Web.AppManager.Instance> {
-        const startContext: IntentsResolverStartContext = {
-            intent: requestObj.intent,
-            callerId: this.interop.instance.instance!,
-            methodName
-        };
-
-        const startOptions = await this.composeStartOptions();
-
-        const instance = await this.appManager.getApplication(this.intentsResolverAppName).start(startContext, startOptions);
-
-        this.subscribeOnInstanceStopped(instance);
-
-        this.createResponsePromise(requestObj.intent, instance.id, methodName);
-
-        return instance;
-    }
-
-    private async cleanUpIntentResolverPromise(instanceId: string): Promise<void> {
-        const intentPromise = this.intentsResolverResponsePromises[instanceId];
-
-        if (!intentPromise) {
-            return;
-        }
-
-        // typings are wrong and mark unregister as a sync method
-        const unregisterPromise = this.interop.unregister(intentPromise.methodName) as unknown as Promise<void>;
-
-        unregisterPromise.catch((error) => this.logger.warn(error));
-
-        delete this.intentsResolverResponsePromises[instanceId];
-    }
-
-    private async composeStartOptions(): Promise<Glue42Web.AppManager.ApplicationStartOptions> {
-        const bounds = await this.getTargetBounds();
-
-        return {
-            top: (bounds.height - INTENTS_RESOLVER_HEIGHT) / 2 + bounds.top,
-            left: (bounds.width - INTENTS_RESOLVER_WIDTH) / 2 + bounds.left,
-            width: INTENTS_RESOLVER_WIDTH,
-            height: INTENTS_RESOLVER_HEIGHT
-        };
-    }
-
-    private async getTargetBounds(): Promise<Glue42Web.Windows.Bounds> {
-        const bounds = await this.tryGetWindowBasedBounds() || await this.tryGetWorkspaceBasedBounds();
-
-        if (bounds) {
-            return bounds;
-        }
-
-        const defaultBounds: Glue42Web.Windows.Bounds = {
-            top: (window as any).screen.availTop || 0,
-            left: (window as any).screen.availLeft || 0,
-            width: window.screen.width,
-            height: window.screen.height
-        };
-
-        this.logger.trace(`Opening the resolver UI relative to my screen bounds: ${JSON.stringify(defaultBounds)}`);
-
-        return defaultBounds;
-    }
-
-    private async tryGetWindowBasedBounds(): Promise<Glue42Web.Windows.Bounds | undefined> {
-        try {
-            const myWindowBounds = await this.windowsManager.my().getBounds();
-
-            this.logger.trace(`Opening the resolver UI relative to my window bounds: ${JSON.stringify(myWindowBounds)}`);
-
-            return myWindowBounds;
-        } catch (error) {
-            this.logger.trace(`Failure to get my window bounds: ${JSON.stringify(error)}`);
-        }
-
-    }
-
-    private async tryGetWorkspaceBasedBounds(): Promise<Glue42Web.Windows.Bounds | undefined> {
-        try {
-            await this.bridge.send<OperationCheckConfig, OperationCheckResult>("workspaces" as LibDomains, systemOperations.operationCheck, { operation: "getWorkspaceWindowFrameBounds" });
-
-            const bridgeResponse = await this.bridge.send<SimpleItemIdRequest, WorkspaceFrameBoundsResult>("workspaces" as LibDomains, systemOperations.getWorkspaceWindowFrameBounds, { itemId: this.windowsManager.my().id });
-
-            const myWorkspaceBounds = bridgeResponse.bounds;
-
-            this.logger.trace(`Opening the resolver UI relative to my workspace frame window bounds: ${JSON.stringify(myWorkspaceBounds)}`);
-
-            return myWorkspaceBounds;
-        } catch (error) {
-            this.logger.trace(`Failure to get my workspace frame window bounds: ${JSON.stringify(error)}`);
-        }
-
-    }
-
-    private subscribeOnInstanceStopped(instance: Glue42Web.AppManager.Instance): void {
-        const { application } = instance;
-
-        const unsub = application.onInstanceStopped((inst: Glue42Web.AppManager.Instance) => {
-            if (inst.id !== instance.id) {
-                return;
-            }
-
-            const intentPromise = this.intentsResolverResponsePromises[inst.id];
-
-            if (!intentPromise) {
-                return unsub();
-            }
-
-            intentPromise.reject(`Cannot resolve raise intent ${intentPromise.intent} - User closed ${this.intentsResolverAppName} app without choosing an intent handler`);
-
-            this.cleanUpIntentResolverPromise(inst.id);
-
-            unsub();
-        })
-    }
-
     private checkIfIntentsResolverIsEnabled(options: Glue42Web.Config): void {
         this.useIntentsResolverUI = typeof options.intents?.enableIntentsResolverUI === "boolean"
             ? options.intents.enableIntentsResolverUI
             : true;
 
         this.intentsResolverAppName = options.intents?.intentsResolverAppName ?? INTENTS_RESOLVER_APP_NAME;
+
+        this.intentResolverResponseTimeout = options.intents?.methodResponseTimeoutMs ?? DEFAULT_RESOLVER_RESPONSE_TIMEOUT;
     }
 
     private clearUnregistrationPromise(promiseToRemove: Promise<void>): void {

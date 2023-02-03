@@ -120,6 +120,10 @@ export class AppManagerController implements LibController {
         return this.applications.find((app) => app.name === verifiedName) as Glue42Web.AppManager.Application;
     }
 
+    public getInstances(): Glue42Web.AppManager.Instance[] {
+        return this.instances.slice();
+    }
+
     private toApi(): Glue42Web.AppManager.API {
         const api: Glue42Web.AppManager.API = {
             myInstance: this.me as unknown as Glue42Web.AppManager.Instance,
@@ -317,12 +321,8 @@ export class AppManagerController implements LibController {
         return response.definitions;
     }
 
-    private getApplications(): Glue42Web.AppManager.Application[] {
+    public getApplications(): Glue42Web.AppManager.Application[] {
         return this.applications.slice();
-    }
-
-    private getInstances(): Glue42Web.AppManager.Instance[] {
-        return this.instances.slice();
     }
 
     private async registerWithPlatform(): Promise<void> {

@@ -47,7 +47,7 @@ export interface SessionWebSettings {
 }
 
 export interface IntentsResolverStartContext {
-    intent: string;
+    intent: string | Glue42Web.Intents.IntentRequest;
     callerId: string;
     methodName: string;
 }
@@ -55,6 +55,33 @@ export interface IntentsResolverStartContext {
 export interface IntentResolverResponse {
     intent: string;
     handler: Glue42Web.Intents.IntentHandler;
+}
+
+export type ShouldResolverOpen = {
+    open: boolean;
+    reason?: string
+}
+
+export interface IntentRequestResolverConfig {
+    enabled: boolean;
+    appName: string;
+    waitResponseTimeout: number;
+}
+
+export interface IntentRequestWithResolverInfo {
+    intentRequest: Glue42Web.Intents.IntentRequest;
+    resolverConfig: IntentRequestResolverConfig;
+}
+
+export interface IsRaiseOperationSupported {
+    supported: boolean;
+    reason?: string;
+}
+
+export interface ResolverIntentHandler {
+    applicationName?: string;
+    applicationIcon?: string;
+    instanceId?: string;
 }
 
 export interface Glue42EventPayload {

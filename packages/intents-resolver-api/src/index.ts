@@ -8,7 +8,7 @@ const factoryFunction: IntentsResolverFactoryFunction = async (glue: Glue42): Pr
     try {
         await ioc.glueController.initialize(glue);
     } catch (error) {
-        throw new Error(`The Intents Resolver API did not initialized successfully. Error: ${error}`);
+        throw new Error(`The Intents Resolver API did not initialized successfully. Error: ${JSON.stringify(error)}`);
     }
 
     glue.intents.resolver = ioc.intentsResolver;

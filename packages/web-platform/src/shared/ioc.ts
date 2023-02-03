@@ -30,6 +30,7 @@ import { TransactionsController } from "../controllers/transactions";
 import { InterceptionController } from "../controllers/interception";
 import { PluginsController } from "../controllers/plugins";
 import { DomainsController } from "../controllers/domains";
+import { IntentsResolverHelper } from '../libs/intents/resolverHelper';
 
 export class IoC {
     private _gatewayInstance!: Gateway;
@@ -45,6 +46,7 @@ export class IoC {
     private _workspacesController!: WorkspacesController;
     private _hibernationWatcher!: WorkspaceHibernationWatcher;
     private _intentsController!: IntentsController;
+    private _intentsResolverController!: IntentsResolverHelper;
     private _channelsController!: ChannelsController;
     private _notificationsController!: NotificationsController;
     private _extensionController!: ExtensionController;
@@ -228,12 +230,21 @@ export class IoC {
         if (!this._intentsController) {
             this._intentsController = new IntentsController(
                 this.glueController,
+                this.intentsResolverHelper,
                 this.appDirectory,
                 this
             );
         }
 
         return this._intentsController;
+    }
+
+    public get intentsResolverHelper(): IntentsResolverHelper {
+        if (!this._intentsResolverController) {
+            this._intentsResolverController = new IntentsResolverHelper(this.glueController, this.workspacesController, this.windowsController);
+        }
+
+        return this._intentsResolverController;
     }
 
     public get channelsController(): ChannelsController {

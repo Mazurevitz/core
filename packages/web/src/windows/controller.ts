@@ -240,6 +240,16 @@ export class WindowsController implements LibController {
     }
 
     private async handleGetBounds(): Promise<WindowBoundsResult> {
+
+        // this handles the case where an iframe is asked for it's bounds, the iframe should respond with it's top window bounds
+        if (!this.isWorkspaceFrame && this.publicWindowId !== this.actualWindowId) {
+            const bounds = await this.me.getBounds();
+            return {
+                windowId: this.me.id,
+                bounds
+            };
+        }
+
         // this.me is optional, because this handler responds to a workspace frame bounds request and the frame is not a regular GD window
         return {
             windowId: this.isWorkspaceFrame ? "noop" : this.me.id,
@@ -352,7 +362,7 @@ export class WindowsController implements LibController {
         };
 
         this.me.isFocused = hasFocus;
-        
+
         await this.bridge.send<FocusEventData, void>("windows", operations.focusChange, eventData);
     }
 }

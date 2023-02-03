@@ -231,7 +231,7 @@ export class LayoutsController implements LibController {
         // the response will throw when communicating with an older Glue Web client which cannot service this message 
         const saveRequestResponse = await PromiseWrap<SaveRequestClientResponse>(async () => {
             try {
-                const clientResponse = await this.glueController.callWindow<RawWindowsLayoutDataRequestConfig, SaveRequestClientResponse>("layouts", this.operations.clientSaveRequest, requestConfig, windowData.windowId)
+                const clientResponse = await this.glueController.callWindow<RawWindowsLayoutDataRequestConfig, SaveRequestClientResponse>("layouts", this.operations.clientSaveRequest, requestConfig, { windowId: windowData.windowId });
                 return clientResponse;
             } catch (error) {
                 return {};

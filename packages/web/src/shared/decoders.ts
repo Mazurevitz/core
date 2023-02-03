@@ -5,7 +5,7 @@ import { AppsImportOperation, AppHelloSuccess, ApplicationData, ApplicationStart
 import { AllLayoutsFullConfig, AllLayoutsSummariesResult, GetAllLayoutsConfig, LayoutsImportConfig, LayoutsOperationTypes, OptionalSimpleLayoutResult, RestoreLayoutConfig, SaveLayoutConfig, SaveRequestClientResponse, PlatformSaveRequestConfig, SimpleLayoutConfig, SimpleLayoutResult, PermissionStateResult, SimpleAvailabilityResult } from "../layouts/protocol";
 import { HelloSuccess, OpenWindowConfig, CoreWindowData, WindowHello, WindowOperationTypes, SimpleWindowCommand, WindowTitleConfig, WindowBoundsResult, WindowMoveResizeConfig, WindowUrlResult, FrameWindowBoundsResult, FocusEventData } from "../windows/protocol";
 import { IntentsOperationTypes, WrappedIntentFilter, WrappedIntents } from "../intents/protocol";
-import { IntentResolverResponse, LibDomains, OperationCheckConfig, OperationCheckResult, SimpleItemIdRequest, WorkspaceFrameBoundsResult } from "./types";
+import { IntentResolverResponse, LibDomains, OperationCheckConfig, OperationCheckResult, SimpleItemIdRequest, WorkspaceFrameBoundsResult, IntentRequestWithResolverInfo, IntentRequestResolverConfig } from "./types";
 import { NotificationEventPayload, NotificationsOperationTypes, PermissionQueryResult, PermissionRequestResult, RaiseNotification } from "../notifications/protocol";
 
 export const nonEmptyStringDecoder: Decoder<string> = string().where((s) => s.length > 0, "Expected a non-empty string");
@@ -496,10 +496,11 @@ export const optionalSimpleLayoutResult: Decoder<OptionalSimpleLayoutResult> = o
     layout: optional(glueLayoutDecoder)
 });
 
-export const intentsOperationTypesDecoder: Decoder<IntentsOperationTypes> = oneOf<"findIntent" | "getIntents" | "raiseIntent">(
+export const intentsOperationTypesDecoder: Decoder<IntentsOperationTypes> = oneOf<"findIntent" | "getIntents" | "raiseIntent" | "raise">(
     constant("findIntent"),
     constant("getIntents"),
-    constant("raiseIntent")
+    constant("raiseIntent"),
+    constant("raise")
 );
 
 const intentHandlerDecoder: Decoder<Glue42Web.Intents.IntentHandler> = object({
@@ -515,10 +516,16 @@ const intentHandlerDecoder: Decoder<Glue42Web.Intents.IntentHandler> = object({
     resultType: optional(string())
 });
 
+export const resolverIntentHandlerDecoder = object({
+    applicationName: string(),
+    applicationIcon: optional(string()),
+    instanceId: optional(string()),
+});
+
 export const intentResolverResponseDecoder: Decoder<IntentResolverResponse> = object({
     intent: nonEmptyStringDecoder,
     handler: intentHandlerDecoder
-})
+});
 
 const intentDecoder: Decoder<Glue42Web.Intents.Intent> = object({
     name: nonEmptyStringDecoder,
@@ -536,7 +543,7 @@ const intentTargetDecoder: Decoder<"startNew" | "reuse" | { app?: string; instan
 
 const intentContextDecoder: Decoder<Glue42Web.Intents.IntentContext> = object({
     type: optional(nonEmptyStringDecoder),
-    data: optional(object())
+    data: optional(anyJson())
 });
 
 export const intentsDecoder: Decoder<Glue42Web.Intents.Intent[]> = array(intentDecoder);
@@ -564,13 +571,25 @@ export const intentRequestDecoder: Decoder<Glue42Web.Intents.IntentRequest> = ob
     intent: nonEmptyStringDecoder,
     target: optional(intentTargetDecoder),
     context: optional(intentContextDecoder),
-    options: optional(windowOpenSettingsDecoder)
+    options: optional(windowOpenSettingsDecoder),
+    handlers: optional(array(intentHandlerDecoder))
 });
 
 export const raiseRequestDecoder: Decoder<string | Glue42Web.Intents.IntentRequest> = oneOf<string | Glue42Web.Intents.IntentRequest>(
     nonEmptyStringDecoder,
     intentRequestDecoder
 );
+
+export const intentRequestResolverConfigDecoder: Decoder<IntentRequestResolverConfig> = object({
+    enabled: boolean(),
+    appName: nonEmptyStringDecoder,
+    waitResponseTimeout: number()
+});
+
+export const raiseIntentRequestDecoder: Decoder<IntentRequestWithResolverInfo> = object({
+    intentRequest: intentRequestDecoder,
+    resolverConfig: intentRequestResolverConfigDecoder
+});
 
 export const intentResultDecoder: Decoder<Glue42Web.Intents.IntentResult> = object({
     request: intentRequestDecoder,

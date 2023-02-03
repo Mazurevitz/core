@@ -5,24 +5,27 @@ import { ApplicationStartConfig, BridgeOperation, LibController, OperationCheckC
 import { GlueController } from "../../controllers/glue";
 import { IoC } from "../../shared/ioc";
 import { PromisePlus } from "../../shared/promisePlus";
-import { intentsOperationTypesDecoder, wrappedIntentsDecoder, wrappedIntentFilterDecoder, intentRequestDecoder, intentResultDecoder } from "./decoders";
-import { IntentsOperationTypes, AppDefinitionWithIntents, IntentInfo, IntentStore, WrappedIntentFilter, WrappedIntents } from "./types";
+import { intentsOperationTypesDecoder, wrappedIntentsDecoder, wrappedIntentFilterDecoder, intentRequestDecoder, intentResultDecoder, raiseIntentRequestDecoder } from "./decoders";
+import { IntentsOperationTypes, AppDefinitionWithIntents, IntentInfo, IntentStore, WrappedIntentFilter, WrappedIntents, RaiseIntentRequestWithResolverConfig, IntentRequestResolverConfig, ShouldResolverOpen } from "./types";
 import logger from "../../shared/logger";
 import { GlueWebIntentsPrefix } from "../../common/constants";
 import { AppDirectory } from "../applications/appStore/directory";
 import { operationCheckConfigDecoder, operationCheckResultDecoder } from "../../shared/decoders";
+import { IntentsResolverHelper } from './resolverHelper';
 
 export class IntentsController implements LibController {
     private operations: { [key in IntentsOperationTypes]: BridgeOperation } = {
         getIntents: { name: "getIntents", resultDecoder: wrappedIntentsDecoder, execute: this.getWrappedIntents.bind(this) },
         findIntent: { name: "findIntent", dataDecoder: wrappedIntentFilterDecoder, resultDecoder: wrappedIntentsDecoder, execute: this.findIntent.bind(this) },
         raiseIntent: { name: "raiseIntent", dataDecoder: intentRequestDecoder, resultDecoder: intentResultDecoder, execute: this.raiseIntent.bind(this) },
+        raise: { name: "raise", dataDecoder: raiseIntentRequestDecoder, resultDecoder: intentResultDecoder, execute: this.raise.bind(this) },
         operationCheck: { name: "operationCheck", dataDecoder: operationCheckConfigDecoder, resultDecoder: operationCheckResultDecoder, execute: this.handleOperationCheck.bind(this) }
     };
     private started = false;
 
     constructor(
         private readonly glueController: GlueController,
+        private readonly resolverHelper: IntentsResolverHelper,
         private readonly appDirectory: AppDirectory,
         private readonly ioc: IoC
     ) { }
@@ -44,6 +47,8 @@ export class IntentsController implements LibController {
 
         const commandId = args.commandId;
 
+        const callerId = args.callerId;
+
         const operationValidation = intentsOperationTypesDecoder.run(args.operation);
 
         if (!operationValidation.ok) {
@@ -60,7 +65,7 @@ export class IntentsController implements LibController {
 
         this.logger?.debug(`[${commandId}] ${operationName} command is valid with data: ${JSON.stringify(intentsData)}`);
 
-        const result = await this.operations[operationName].execute(intentsData, commandId);
+        const result = await this.operations[operationName].execute(intentsData, commandId, callerId);
 
         const resultValidation = this.operations[operationName].resultDecoder?.run(result);
 
@@ -262,6 +267,10 @@ export class IntentsController implements LibController {
     private async waitForServer(instanceId: string): Promise<Glue42Web.Interop.Instance> {
         let unsub: () => void;
 
+        const waitTimeoutMs = 30 * 1000;
+
+        this.logger?.trace(`Waiting ${waitTimeoutMs}ms for server instance with id ${instanceId}`);
+
         const executor = (resolve: (value: Glue42Web.Interop.Instance) => void): void => {
             unsub = this.glueController.subscribeForServerAdded((server) => {
                 if (server.windowId === instanceId || server.instance === instanceId) {
@@ -269,11 +278,16 @@ export class IntentsController implements LibController {
                 }
             });
         };
-        return PromisePlus(executor, 30 * 1000, `Can not find interop server for instance ${instanceId}`).finally(() => unsub());
+
+        return PromisePlus(executor, waitTimeoutMs, `Can not find interop server for instance ${instanceId}`).finally(() => unsub());
     }
 
     private async waitForMethod(methodName: string, instanceId: string): Promise<Glue42Web.Interop.MethodDefinition> {
         let unsub: () => void;
+
+        const waitTimeoutMs = 10 * 1000;
+
+        this.logger?.trace(`Waiting ${waitTimeoutMs}ms for server instance with id ${instanceId} to register method ${methodName}`);
 
         const executor = (resolve: (value: Glue42Web.Interop.MethodDefinition) => void): void => {
             unsub = this.glueController.subscribeForMethodAdded((addedMethod) => {
@@ -282,7 +296,8 @@ export class IntentsController implements LibController {
                 }
             });
         };
-        return PromisePlus(executor, 10 * 1000, `Can not find interop method ${methodName} for instance ${instanceId}`).finally(() => unsub());
+
+        return PromisePlus(executor, waitTimeoutMs, `Can not find interop method ${methodName} for instance ${instanceId}`).finally(() => unsub());
     }
 
     private instanceIdToInteropInstance(instanceId: string): string | undefined {
@@ -291,25 +306,8 @@ export class IntentsController implements LibController {
         return servers.find((server) => server.windowId === instanceId || server.instance === instanceId)?.instance;
     }
 
-    private async raiseIntentToInstance(instanceId: string, intent: string, context?: Glue42Web.Intents.IntentContext): Promise<any> {
-        const methodName = `${GlueWebIntentsPrefix}${intent}`;
-        let interopServer = this.glueController.getServers().find((server) => server.windowId === instanceId || server.instance === instanceId);
-        if (!interopServer) {
-            interopServer = await this.waitForServer(instanceId);
-        }
-
-        const method = interopServer.getMethods?.().find((registeredMethod) => registeredMethod.name === methodName);
-        if (!method) {
-            await this.waitForMethod(methodName, instanceId);
-        }
-
-        const result = await this.glueController.invokeMethod<any>(methodName, context, { instance: this.instanceIdToInteropInstance(instanceId) });
-
-        return result.returned;
-    }
-
     private async raiseIntent(intentRequest: Glue42Web.Intents.IntentRequest, commandId: string): Promise<Glue42Web.Intents.IntentResult> {
-        this.logger?.trace(`[${commandId}] handling raiseIntent command`);
+        this.logger?.trace(`[${commandId}] handling raiseIntent command with intentRequest: ${JSON.stringify(intentRequest)}`);
 
         const intentName = intentRequest.intent;
         const intentDef = await this.getIntent(intentName, commandId);
@@ -318,48 +316,182 @@ export class IntentsController implements LibController {
             throw new Error(`Intent ${intentName} not found!`);
         }
 
-        const isDynamicIntent = !intentDef.handlers.some((intentDefHandler) => intentDefHandler.type === "app");
+        this.logger?.trace(`Raised intent definition: ${JSON.stringify(intentDef)}`);
 
-        // Default to "reuse" in the case of a dynamic intent and to "startNew" if target isn't provided.
-        const target = intentRequest.target || (isDynamicIntent ? "reuse" : "startNew");
-        // The handler that will execute the intent.
+        const firstFoundAppHandler = intentRequest.handlers ? this.findHandlerByFilter(intentRequest.handlers, { type: "app" }) : this.findHandlerByFilter(intentDef.handlers, { type: "app" });
+
+        const firstFoundInstanceHandler = intentRequest.handlers ? this.findHandlerByFilter(intentRequest.handlers, { type: "instance" }) : this.findHandlerByFilter(intentDef.handlers, { type: "instance" });
+
         let handler: Glue42Web.Intents.IntentHandler | undefined;
-        const anAppHandler = intentDef.handlers.find((intentHandler) => intentHandler.type === "app");
-        if (target === "startNew") {
-            handler = anAppHandler;
-        } else if (target === "reuse") {
-            const anInstanceHandler = intentDef.handlers.find((intentHandler) => intentHandler.type === "instance");
-            handler = anInstanceHandler || anAppHandler;
-        } else if (target.instance) {
-            handler = intentDef.handlers.find((intentHandler) => intentHandler.type === "instance" && intentHandler.instanceId === target.instance);
-        } else if (target.app) {
-            handler = intentDef.handlers.find((intentHandler) => intentHandler.type === "app" && intentHandler.applicationName === target.app);
-        } else {
-            throw new Error(`Invalid intent target: ${JSON.stringify(target)}`);
+
+        // target the first found instance or start a new one if there isn't
+        if (!intentRequest.target || intentRequest.target === "reuse") {
+            handler = firstFoundInstanceHandler || firstFoundAppHandler;
+        }
+
+        // start new instance of the first handler in handlers / intentDef.handlers
+        if (intentRequest.target === "startNew") {
+            handler = firstFoundAppHandler;
+        }
+
+        // open a new app from the list of intentRequest.handlers (if passed) or intentDef.handlers
+        if (typeof intentRequest.target === "object" && intentRequest.target.app) {
+            handler = this.findHandlerByFilter(intentDef.handlers, { app: intentRequest.target.app });
+        }
+
+        // target the instance in the list of intentRequest.handlers (if passed) or intentDef.handlers
+        if (typeof intentRequest.target === "object" && intentRequest.target.instance) {
+            handler = this.findHandlerByFilter(intentDef.handlers, { instance: intentRequest.target.instance, app: intentRequest.target.app });
         }
 
         if (!handler) {
             throw new Error(`Can not raise intent for request ${JSON.stringify(intentRequest)} - can not find intent handler!`);
         }
 
-        handler.instanceId;
+        const result = await this.raiseIntentToTargetHandler(intentRequest, handler, commandId);
 
-        if (handler.type === "app") {
-            handler.instanceId = await this.startApp({ name: handler.applicationName, ...intentRequest.options }, commandId);
+        return result;
+    }
+
+    private findHandlerByFilter(handlers: Glue42Web.Intents.IntentHandler[], filter: { app?: string, instance?: string, type?: "app" | "instance" }) {
+        if (filter.type) {
+            return handlers.find(handler => handler.type === filter.type);
         }
 
-        if (!handler.instanceId) {
-            throw new Error(`Can not raise intent for request ${JSON.stringify(intentRequest)} - handler is missing instanceId!`);
+        if (filter.instance) {
+            return handlers.find(handler => filter.app
+                ? handler.applicationName === filter.app && handler.instanceId === filter.instance
+                : handler.instanceId === filter.instance
+            );
         }
 
-        const result = await this.raiseIntentToInstance(handler.instanceId, intentName, intentRequest.context);
+        if (filter.app) {
+            return handlers.find(handler => handler.applicationName === filter.app);
+        }
+    }
 
-        this.logger?.trace(`[${commandId}] raiseIntent command completed`);
+    private async raiseIntentToTargetHandler(request: Glue42Web.Intents.IntentRequest, handler: Glue42Web.Intents.IntentHandler, commandId: string): Promise<Glue42Web.Intents.IntentResult> {
+        this.logger?.trace(`Raising intent to target handler:${JSON.stringify(handler)}`);
+
+        const instanceId = handler.instanceId || await this.startApp({ name: handler.applicationName, ...request.options, context: request.context }, commandId);
+
+        const methodName = `${GlueWebIntentsPrefix}${request.intent}`;
+
+        this.logger?.trace(`Searching for interop server offering method ${methodName}`);
+
+        let interopServer = this.glueController.getServers().find((server) => server.windowId === handler.instanceId || server.instance === handler.instanceId);
+
+        if (!interopServer) {
+            this.logger?.trace(`Interop server for method ${methodName} does not exist`);
+
+            interopServer = await this.waitForServer(instanceId);
+        }
+
+        const method = interopServer.getMethods?.().find((registeredMethod) => registeredMethod.name === methodName);
+
+        if (!method) {
+            this.logger?.trace(`Server with id ${interopServer.instance} does not offer yet offer method ${methodName}`);
+
+            await this.waitForMethod(methodName, instanceId);
+        }
+
+        const result = await this.glueController.invokeMethod<any>(methodName, request.context, { instance: this.instanceIdToInteropInstance(instanceId) });
+
+        this.logger?.trace(`[${commandId}] raiseIntent command completed. Returning result: ${JSON.stringify(result)}`);
 
         return {
-            request: intentRequest,
-            handler,
-            result
+            request,
+            handler: { ...handler, instanceId },
+            result: result.returned
         };
+    }
+
+    private async raise(request: RaiseIntentRequestWithResolverConfig, commandId: string, callerId?: string): Promise<Glue42Web.Intents.IntentResult> {
+        this.logger?.trace(`[${commandId}] Receive raise command with config: ${JSON.stringify(request)}`);
+
+        if (!callerId) {
+            throw new Error(`Cannot raise intent - callerId is not defined`);
+        }
+
+        const { resolverConfig, intentRequest } = request;
+
+        const intent = (await this.findIntent({ filter: { name: intentRequest.intent } }, commandId)).intents.find(intent => intent.name === intentRequest.intent);
+
+        if (!intent) {
+            throw new Error(`Intent with name ${intentRequest.intent} not found`);
+        }
+
+        this.logger?.trace(`[${commandId}] Intent to be handled: ${JSON.stringify(intent)}`);
+
+        const { open, reason } = this.checkIfResolverShouldBeOpened(intent, intentRequest, resolverConfig);
+
+        if (!open) {
+            this.logger?.trace(`[${commandId}] Intent Resolver UI won't be used. Reason: ${reason}`);
+
+            return this.raiseIntent(intentRequest, commandId);
+        }
+
+        this.logger?.trace(`[${commandId}] Starting Intent Resolver app for intent request: ${request}`);
+
+        const resolverHandler = await this.resolverHelper.startResolverApp(request, callerId, commandId);
+
+        this.logger?.trace(`Raising intent to target handler: ${JSON.stringify(resolverHandler)}`);
+
+        const result = await this.raiseIntentToTargetHandler(intentRequest, resolverHandler, commandId);
+
+        this.logger?.trace(`Result from raise() method for intent ${JSON.stringify(intentRequest.intent)}: ${JSON.stringify(result)}`);
+
+        return result;
+    }
+
+    private checkIfIntentHasMoreThanOneHandler(intent: Glue42Web.Intents.Intent, request: Glue42Web.Intents.IntentRequest): boolean {
+        // no target => show resolver if request.handlers > 1 || intent.handlers.length > 1
+        // reuse => show resolver if 2+ instances in request.handlers || show resolver if intent.handlers.length > 1
+        // startNew => show resolver if 2+ apps in request.handler || intent.handlers as apps > 1
+        // app => do not show resolver
+
+        if (!request.target) {
+            return request.handlers
+                ? request.handlers.length > 1
+                : intent.handlers.length > 1;
+        }
+
+        if (request.target === "reuse") {
+            return request.handlers
+                ? request.handlers.filter(handler => handler.type === "instance" && handler.instanceId).length > 1 || request.handlers.filter(handler => handler.type === "app").length > 1
+                : intent.handlers.filter(handler => handler.type === "instance" && handler.instanceId).length > 1 || intent.handlers.filter(handler => handler.type === "app").length > 1;
+        }
+
+        if (request.target === "startNew") {
+            return request.handlers
+                ? request.handlers.filter(handler => handler.type === "app").length > 1
+                : intent.handlers.filter(handler => handler.type === "app").length > 1;
+        }
+
+        if (typeof request.target === "object") {
+            return false;
+        }
+
+        return false;
+    }
+
+    private checkIfResolverShouldBeOpened(intent: Glue42Web.Intents.Intent, intentRequest: Glue42Web.Intents.IntentRequest, resolverConfig: IntentRequestResolverConfig): ShouldResolverOpen {
+        if (!resolverConfig.enabled) {
+            return { open: false, reason: `Intent Resolver is disabled. Raising intent to first found handler` };
+        }
+
+        const intentsResolverApp = this.glueController.clientGlue.appManager.application(resolverConfig.appName);
+
+        if (!intentsResolverApp) {
+            return { open: false, reason: `Application with name ${resolverConfig.appName} not found` };
+        }
+
+        const hasMoreThanOneHandler = this.checkIfIntentHasMoreThanOneHandler(intent, intentRequest);
+
+        if (!hasMoreThanOneHandler) {
+            return { open: false, reason: `Raised intent has only one handler` };
+        }
+
+        return { open: true };
     }
 }

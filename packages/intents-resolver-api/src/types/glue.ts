@@ -18,21 +18,23 @@ export interface IntentHandler {
     type: "app" | "instance";
 }
 
-type IntentContext = {
+export interface IntentContext {
     readonly type?: string;
     readonly data?: { [key: string]: any };
 }
 
-type IntentRequest = {
+export interface IntentRequest {
     readonly intent: string;
     readonly target?: "startNew" | "reuse" | { app?: string; instance?: string };
     readonly context?: IntentContext;
     readonly options?: ApplicationStartOptions;
+    readonly handlers?: IntentHandler[]
 }
 
 export type SharedContext = {
     callerId: string;
-    intent: string;
+    intent: string | IntentRequest;
+    methodName: string;
 }
 
 export type IntentHandlersResponse = {
@@ -83,14 +85,6 @@ interface ApplicationStartOptions {
     waitForAGMReady?: boolean;
 }
 
-export interface AppDefinitionInGD {
-    name: string;
-    title?: string;
-    caption?: string;
-    icon?: string;
-    intents?: IntentInfo[];
-}
-
 interface InteropInstance {
     api: string;
     application: string;
@@ -131,7 +125,7 @@ interface IntentsAPI {
     resolver?: IntentsResolver
 }
 
-interface ServerInstance {
+export interface ServerInstance {
     api: string;
     application: string;
     applicationName: string;
@@ -209,6 +203,18 @@ interface WebWindow {
     getTitle(): Promise<string>;
     close(): Promise<WebWindow>;
     getContext(): Promise<any>;
+}
+
+export type RelativeDirection = "top" | "left" | "right" | "bottom";
+
+export interface WindowSettings {
+    top?: number;
+    left?: number;
+    width?: number;
+    height?: number;
+    context?: any;
+    relativeTo?: string;
+    relativeDirection?: RelativeDirection;
 }
 
 interface WindowsAPI {

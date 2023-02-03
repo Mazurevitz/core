@@ -116,7 +116,7 @@ export interface WorkspaceWindowSession {
 
 export interface BridgeOperation {
     name: string;
-    execute: (args: any, commandId: string) => Promise<any>;
+    execute: (args: any, commandId: string, callerId?: string) => Promise<any>;
     dataDecoder?: Decoder<any>;
     resultDecoder?: Decoder<any>;
 }

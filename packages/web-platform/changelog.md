@@ -1,3 +1,5 @@
+1.20.0
+feat: introduced raise operation for domain intents to handle logic related to raising an intent and opening the Intents Resolver UI 
 1.19.1
 fix: reverted window.opener.name discovery of clients
 1.19.0

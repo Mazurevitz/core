@@ -1,3 +1,6 @@
+2.13.0
+feat: added handlers prop to IntentRequest
+feat: added methodResponseTimeoutMs in the intents config passed to GlueWeb factory function
 2.12.0
 feat: adds support for layoutComponentId for windows and app instances
 2.11.3

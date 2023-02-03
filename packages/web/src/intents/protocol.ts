@@ -1,13 +1,14 @@
 import { Glue42Web } from "../../web";
-import { wrappedIntentFilterDecoder, intentRequestDecoder, intentResultDecoder, wrappedIntentsDecoder } from "../shared/decoders";
+import { wrappedIntentFilterDecoder, intentRequestDecoder, intentResultDecoder, wrappedIntentsDecoder, raiseIntentRequestDecoder } from "../shared/decoders";
 import { BridgeOperation } from "../shared/types";
 
-export type IntentsOperationTypes = "getIntents" | "findIntent" | "raiseIntent";
+export type IntentsOperationTypes = "getIntents" | "findIntent" | "raiseIntent" | "raise";
 
 export const operations: { [key in IntentsOperationTypes]: BridgeOperation } = {
     getIntents: { name: "getIntents", resultDecoder: wrappedIntentsDecoder },
     findIntent: { name: "findIntent", dataDecoder: wrappedIntentFilterDecoder, resultDecoder: wrappedIntentsDecoder },
-    raiseIntent: { name: "raiseIntent", dataDecoder: intentRequestDecoder, resultDecoder: intentResultDecoder }
+    raiseIntent: { name: "raiseIntent", dataDecoder: intentRequestDecoder, resultDecoder: intentResultDecoder },
+    raise: { name: "raise", dataDecoder: raiseIntentRequestDecoder, resultDecoder: intentResultDecoder },
 };
 
 export interface WrappedIntentFilter {

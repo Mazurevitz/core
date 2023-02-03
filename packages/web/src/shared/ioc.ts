@@ -19,6 +19,7 @@ import { Notification } from "../notifications/notification";
 import { ExtController } from "../extension/controller";
 import { EventsDispatcher } from "./dispatcher";
 import { PreferredConnectionController } from "../communication/preferred";
+import { LegacyIntentsHelper } from '../intents/legacyHelper';
 
 export class IoC {
     private _coreGlue!: Glue42Core.GlueCore;
@@ -31,6 +32,7 @@ export class IoC {
     private _layoutsControllerInstance!: LayoutsController;
     private _notificationsControllerInstance!: NotificationsController;
     private _intentsControllerInstance!: IntentsController;
+    private _legacyIntentsHelperInstance!: LegacyIntentsHelper;
     private _channelsControllerInstance!: ChannelsController;
     private _extensionController!: ExtController;
     private _systemControllerInstance!: SystemController;
@@ -105,6 +107,14 @@ export class IoC {
         }
 
         return this._intentsControllerInstance;
+    }
+
+    public get legacyIntentsHelper(): LegacyIntentsHelper {
+        if (!this._legacyIntentsHelperInstance) {
+            this._legacyIntentsHelperInstance = new LegacyIntentsHelper(this._coreGlue.logger, this.bridge, this._coreGlue.interop, this.appManagerController, this.windowsController);
+        }
+
+        return this._legacyIntentsHelperInstance;
     }
 
     public get systemController(): SystemController {

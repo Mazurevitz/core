@@ -27,7 +27,7 @@ export class GlueController {
     constructor(
         private readonly portsBridge: PortsBridge,
         private readonly sessionStorage: SessionStorageController
-    ) {}
+    ) { }
 
     public get platformVersion(): string {
         return version;
@@ -144,13 +144,13 @@ export class GlueController {
         return result;
     }
 
-    public async callWindow<OutBound extends object, InBound>(domain: LibDomains, operationDefinition: BridgeOperation, data: OutBound, windowId: string): Promise<InBound> {
+    public async callWindow<OutBound extends object, InBound>(domain: LibDomains, operationDefinition: BridgeOperation, data: OutBound, target: Glue42Core.Interop.Instance): Promise<InBound> {
 
         const operation = operationDefinition.name;
 
         const messageData = { domain, operation, data };
 
-        const baseErrorMessage = `Internal Platform-> ${domain} Domain Communication Error. Attempted calling client window: ${windowId} for operation ${operation}. `;
+        const baseErrorMessage = `Internal Platform-> ${domain} Domain Communication Error. Attempted calling client window: ${JSON.stringify(target)} for operation ${operation}. `;
 
         if (operationDefinition.dataDecoder) {
             const decodeResult = operationDefinition.dataDecoder.run(messageData.data);
@@ -160,13 +160,13 @@ export class GlueController {
             }
         }
 
-        const result = await this.transmitMessage<InBound>(GlueClientControlName, messageData, baseErrorMessage, { windowId }, { methodResponseTimeoutMs: 30000, waitTimeoutMs: 30000 });
+        const result = await this.transmitMessage<InBound>(GlueClientControlName, messageData, baseErrorMessage, target, { methodResponseTimeoutMs: 30000, waitTimeoutMs: 30000 });
 
         if (operationDefinition.resultDecoder) {
             const decodeResult = operationDefinition.resultDecoder.run(result);
 
             if (!decodeResult.ok) {
-                throw new Error(`${baseErrorMessage} Result validation failed when calling window: ${windowId} for operation ${operation}: ${JSON.stringify(decodeResult.error)}`);
+                throw new Error(`${baseErrorMessage} Result validation failed when calling window: ${JSON.stringify(target)} for operation ${operation}: ${JSON.stringify(decodeResult.error)}`);
             }
         }
 

@@ -1,12 +1,13 @@
 import { Glue42Web } from "@glue42/web";
-import { Decoder, object, array, optional, anyJson, oneOf, constant, string } from "decoder-validate";
+import { Decoder, object, array, optional, anyJson, oneOf, constant, string, boolean, number } from "decoder-validate";
 import { nonEmptyStringDecoder, windowOpenSettingsDecoder } from "../../shared/decoders";
-import { IntentsOperationTypes, WrappedIntentFilter, WrappedIntents } from "./types";
+import { IntentRequestResolverConfig, IntentResolverResponse, IntentsOperationTypes, RaiseIntentRequestWithResolverConfig, ResolverIntentHandler, WrappedIntentFilter, WrappedIntents } from "./types";
 
-export const intentsOperationTypesDecoder: Decoder<IntentsOperationTypes> = oneOf<"findIntent" | "getIntents" | "raiseIntent" | "operationCheck">(
+export const intentsOperationTypesDecoder: Decoder<IntentsOperationTypes> = oneOf<"findIntent" | "getIntents" | "raiseIntent" | "raise" | "operationCheck">(
     constant("findIntent"),
     constant("getIntents"),
     constant("raiseIntent"),
+    constant("raise"),
     constant("operationCheck")
 );
 
@@ -56,15 +57,38 @@ export const wrappedIntentFilterDecoder: Decoder<WrappedIntentFilter> = object({
     }))
 });
 
+export const resolverIntentHandlerDecoder: Decoder<ResolverIntentHandler> = object({
+    applicationName: nonEmptyStringDecoder,
+    applicationIcon: optional(string()),
+    instanceId: optional(string()),
+});
+
 export const intentRequestDecoder: Decoder<Glue42Web.Intents.IntentRequest> = object({
     intent: nonEmptyStringDecoder,
     target: optional(intentTargetDecoder),
     context: optional(intentContextDecoder),
-    options: optional(windowOpenSettingsDecoder)
+    options: optional(windowOpenSettingsDecoder),
+    handlers: optional(array(intentHandlerDecoder))
+});
+
+const intentRequestResolverConfigDecoder: Decoder<IntentRequestResolverConfig> = object({
+    enabled: optional(boolean()),
+    appName: string(),
+    waitResponseTimeout: number()
+});
+
+export const raiseIntentRequestDecoder: Decoder<RaiseIntentRequestWithResolverConfig> = object({
+    intentRequest: intentRequestDecoder,
+    resolverConfig: intentRequestResolverConfigDecoder
 });
 
 export const intentResultDecoder: Decoder<Glue42Web.Intents.IntentResult> = object({
     request: intentRequestDecoder,
     handler: intentHandlerDecoder,
     result: anyJson()
+});
+
+export const intentResolverResponseDecoder: Decoder<IntentResolverResponse> = object({
+    intent: nonEmptyStringDecoder,
+    handler: intentHandlerDecoder
 });
