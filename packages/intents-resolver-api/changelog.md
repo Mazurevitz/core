@@ -1,3 +1,5 @@
+1.1.0
+feat: reworked visualization of handlers
 1.0.3
 fix: checking for added intent listener is case sensitive
 fix: filtering of intent handler in sendResponse
