@@ -35,7 +35,7 @@ export default function (instance: Glue42Core.AGM.Instance, connection: Connecti
         });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const reconnectionPromises: Array<Promise<any>> = [];
+        const reconnectionPromises: Promise<any>[] = [];
 
         const existingSubscriptions = client.drainSubscriptions();
 

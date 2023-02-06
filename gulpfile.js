@@ -7,11 +7,11 @@ const { spawn } = require('child_process');
 const { PublishCommand } = require('@lerna/publish');
 const git = require('simple-git')(__dirname);
 const pkg = require('./package.json');
-const typescript = require('rollup-plugin-typescript2');
+const typescript = require('@rollup/plugin-typescript');
 const commonjs = require('@rollup/plugin-commonjs');
 const node_resolve = require('@rollup/plugin-node-resolve');
 const json = require('@rollup/plugin-json');
-const terser = require('rollup-plugin-terser').terser;
+const terser = require('@rollup/plugin-terser');
 const rollup = require('rollup');
 const replace = require('@rollup/plugin-replace');
 // const sync = require('./scripts/preversion/sync.js');
@@ -142,7 +142,8 @@ const buildGtf = async (name) => {
         ],
         plugins: [
             typescript({
-                typescript: require('typescript')
+                typescript: require('typescript'),
+                include: ['./e2e/config/gtf/**/*.ts']
             }),
             json(),
             commonjs(),

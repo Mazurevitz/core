@@ -59,7 +59,7 @@ export class GlueBridge {
         if (operation.dataDecoder) {
             try {
                 operation.dataDecoder.runWithException(operationData);
-            } catch (error) {
+            } catch (error: any) {
                 throw new Error(`Unexpected internal outgoing validation error: ${error.message}, for operation: ${operation.name} and input: ${JSON.stringify(error.input)}`);
             }
         }
@@ -73,7 +73,7 @@ export class GlueBridge {
 
             return operationResult;
 
-        } catch (error) {
+        } catch (error: any) {
             if (error.kind) {
                 throw new Error(`Unexpected internal incoming validation error: ${error.message}, for operation: ${operation.name} and input: ${JSON.stringify(error.input)}`);
             }
@@ -166,7 +166,7 @@ export class GlueBridge {
                 throw new Error("Received unsupported result from the platform - empty values collection");
             }
 
-        } catch (error) {
+        } catch (error: any) {
             if (error && error.all_errors && error.all_errors.length) {
                 // IMPORTANT: Do NOT change the `Inner message:` string, because it is used by other programs to extract the inner message of a communication error
                 const invocationErrorMessage = error.all_errors[0].message;

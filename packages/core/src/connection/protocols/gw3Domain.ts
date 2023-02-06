@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Glue42Core } from "../../../glue";
 import { default as CallbackRegistryFactory, CallbackRegistry } from "callback-registry";
 import generate from "shortid";
@@ -28,7 +29,7 @@ export default function (domain: string, connection: Connection, logger: Logger,
     /** holds latest options passed to join - used when doing reconnects */
     let _latestOptions: object | undefined;
     // #deleteme TODO: verify this gets properly set to true
-    let _connectionOn: boolean = false;
+    let _connectionOn = false;
 
     const callbacks: CallbackRegistry = CallbackRegistryFactory();
 
@@ -57,19 +58,19 @@ export default function (domain: string, connection: Connection, logger: Logger,
 
     const requestsMap: { [key: string]: RequestHandler } = {};
 
-    function join(options?: object): Promise<{}> {
+    function join(options?: object): Promise<object> {
         _latestOptions = options;
 
         return new Promise((resolve, reject) => {
 
             if (isJoined) {
-                resolve();
+                resolve({});
                 return;
             }
-            let joinPromise: Promise<{}>;
+            let joinPromise: Promise<object>;
 
             if (domain === "global") {
-                joinPromise = _connectionOn ? Promise.resolve<{}>({}) : Promise.reject<{}>("not connected to gateway");
+                joinPromise = _connectionOn ? Promise.resolve({}) : Promise.reject("not connected to gateway");
             } else {
                 logger.debug(`joining domain ${domain}`);
 
@@ -87,7 +88,7 @@ export default function (domain: string, connection: Connection, logger: Logger,
             joinPromise
                 .then(() => {
                     handleJoined();
-                    resolve();
+                    resolve({});
                 })
                 .catch((err) => {
                     logger.debug("error joining " + domain + " domain: " + JSON.stringify(err));
@@ -265,7 +266,7 @@ export default function (domain: string, connection: Connection, logger: Logger,
 
                 try {
                     callback(msg);
-                } catch (e) {
+                } catch (e: any) {
                     logger.error(`Callback  failed: ${e} \n ${e.stack} \n msg was: ${JSON.stringify(msg)}`, e);
                 }
             });

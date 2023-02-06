@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import promisify from "../helpers/promisify";
 import ServerStreaming from "./streaming";
-import { Protocol, InteropSettings } from "../types";
+import { Protocol } from "../types";
 import ServerRepository from "./repository";
 import { Glue42Core } from "../../../glue";
 import { WrappedCallbackFunction, ResultContext, ServerMethodInfo } from "./types";
@@ -12,7 +13,7 @@ import ServerStream from "./stream";
  */
 export default class Server {
     private streaming: ServerStreaming;
-    private invocations: number = 0;
+    private invocations = 0;
     private currentlyUnregistering: { [method: string]: Promise<void> } = {};
 
     constructor(private protocol: Protocol, private serverRepository: ServerRepository) {
@@ -27,7 +28,7 @@ export default class Server {
         // in callbacks we have subscriptionRequestHandler, subscriptionAddedHandler, subscriptionRemovedHandler
         const promise = new Promise((resolve, reject) => {
             if (!streamDef) {
-                reject(`The stream name must be unique! Please, provide either a unique string for a stream name to “glue.interop.createStream()” or a “methodDefinition” object with a unique “name” property for the stream.`);
+                reject("The stream name must be unique! Please, provide either a unique string for a stream name to “glue.interop.createStream()” or a “methodDefinition” object with a unique “name” property for the stream.");
                 return;
             }
 
@@ -102,7 +103,7 @@ export default class Server {
 
     public register(methodDefinition: string | Glue42Core.AGM.MethodDefinition, callback: (args: object, caller: Glue42Core.AGM.Instance) => object | Promise<object>): Promise<void> {
         if (!methodDefinition) {
-            return Promise.reject(`Method definition is required. Please, provide either a unique string for a method name or a “methodDefinition” object with a required “name” property.`);
+            return Promise.reject("Method definition is required. Please, provide either a unique string for a method name or a “methodDefinition” object with a required “name” property.");
         }
 
         if (typeof callback !== "function") {
@@ -119,11 +120,8 @@ export default class Server {
                 } else {
                     resultCallback(undefined, result);
                 }
-            } catch (e) {
-                if (!e) {
-                    e = "";
-                }
-                resultCallback(e, e);
+            } catch (e: any) {
+                resultCallback(e ?? "", e ?? "");
             }
         };
 
@@ -135,7 +133,7 @@ export default class Server {
     // registers a new async agm method (the result can be returned in async way)
     public registerAsync(methodDefinition: string | Glue42Core.AGM.MethodDefinition, callback: (args: object, caller: Glue42Core.AGM.Instance, successCallback: (args?: object) => void, errorCallback: (error?: string | object) => void) => Promise<object> | void): Promise<void> {
         if (!methodDefinition) {
-            return Promise.reject(`Method definition is required. Please, provide either a unique string for a method name or a “methodDefinition” object with a required “name” property.`);
+            return Promise.reject("Method definition is required. Please, provide either a unique string for a method name or a “methodDefinition” object with a required “name” property.");
         }
 
         if (typeof callback !== "function") {
@@ -173,7 +171,7 @@ export default class Server {
                         .then(success)
                         .catch(error);
                 }
-            } catch (e) {
+            } catch (e: any) {
                 resultCallback(e, undefined);
             }
         };
@@ -183,9 +181,9 @@ export default class Server {
     }
 
     // Unregisters a previously registered AGM method
-    public async unregister(methodFilter: string | Glue42Core.AGM.MethodDefinition, forStream: boolean = false): Promise<void> {
+    public async unregister(methodFilter: string | Glue42Core.AGM.MethodDefinition, forStream = false): Promise<void> {
         if (methodFilter === undefined) {
-            return Promise.reject(`Please, provide either a unique string for a name or an object containing a “name” property.`);
+            return Promise.reject("Please, provide either a unique string for a name or an object containing a “name” property.");
         }
 
         // WHEN A FUNCTION IS PASSED
@@ -203,7 +201,7 @@ export default class Server {
         }
 
         if (methodDefinition.name === undefined) {
-            return Promise.reject(`Method name is required. Cannot find a method if the method name is undefined!`);
+            return Promise.reject("Method name is required. Cannot find a method if the method name is undefined!");
         }
 
         const methodToBeRemoved: ServerMethodInfo | undefined = this.serverRepository.getList().find((serverMethod) => {
@@ -235,7 +233,7 @@ export default class Server {
     }
 
     private removeMethodsOrStreams(methodsToRemove: ServerMethodInfo[]) {
-        const methodUnregPromises: Array<Promise<void>> = [];
+        const methodUnregPromises: Promise<void>[] = [];
 
         methodsToRemove.forEach((method) => {
             const promise = this.protocol.server.unregister(method)

@@ -1,11 +1,11 @@
-import typescript from 'rollup-plugin-typescript2';
-import commonjs from '@rollup/plugin-commonjs';
-import resolve from '@rollup/plugin-node-resolve';
-import json from '@rollup/plugin-json';
-import pkg from './package.json';
-import alias from '@rollup/plugin-alias';
+const typescript = require('rollup-plugin-typescript2');
+const commonjs = require('@rollup/plugin-commonjs');
+const resolve = require('@rollup/plugin-node-resolve');
+const json = require('@rollup/plugin-json');
+const pkg = require('./package.json');
+const alias = require('@rollup/plugin-alias');
 
-export default {
+module.exports = {
     input: 'src/index.ts',
     output: [
         {

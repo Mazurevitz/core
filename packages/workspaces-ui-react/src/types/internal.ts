@@ -107,7 +107,8 @@ export interface CreateElementRequestOptions {
 
 
 export interface PortalProps {
-  domNode: HTMLElement
+  domNode: HTMLElement;
+  children?: React.ReactNode;
 }
 
 export interface WorkspacesManager {

@@ -28,7 +28,7 @@ window.addEventListener("beforeunload", () => {
 // isInFrame prevents recursion if by accident an invalid url is entered for one of the application
 const isInIframe = window.frameElement;
 if (!isInIframe) {
-    GlueWeb(config).then((glue) => {
+    GlueWeb(config).then((glue: Glue42Web.API) => {
         window.glue = glue;
         facade.subscribeForWorkspaceEvents();
         return manager.init(window.glue, glue.agm.instance.windowId,facade);

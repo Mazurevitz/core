@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export class AsyncSequelizer {
 
-    private readonly queue: Array<{ action: () => Promise<any>; resolve: (args?: any) => void; reject: (err?: any) => void }> = [];
+    private readonly queue: { action: () => Promise<any>; resolve: (args?: any) => void; reject: (err?: any) => void }[] = [];
     private isExecutingQueue = false;
 
     constructor(private readonly minSequenceInterval: number = 0) { }

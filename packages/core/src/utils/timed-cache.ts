@@ -2,7 +2,7 @@ import generate from "shortid";
 
 export class TimedCache<T> {
 
-    private cache: Array<{ id: string; element: T }> = [];
+    private cache: { id: string; element: T }[] = [];
     private timeoutIds: NodeJS.Timeout[] = [];
 
     constructor(private readonly config: { ELEMENT_TTL_MS: number }) { }

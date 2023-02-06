@@ -24,7 +24,7 @@ export default class WS implements Transport {
     private _running = true;
 
     private _registry: CallbackRegistry = CallbackRegistryFactory();
-    private wsRequests: Array<{ callback: () => void, failed?: (err?: string) => void }> = [];
+    private wsRequests: { callback: () => void, failed?: (err?: string) => void }[] = [];
 
     constructor(settings: ConnectionSettings, logger: Logger) {
         this.settings = settings;
@@ -166,7 +166,7 @@ export default class WS implements Transport {
         this.logger.debug(`initiating ws to ${this.settings.ws}...`);
         this.ws = new WebSocketConstructor(this.settings.ws || "") as WebSocket;
         this.ws.onerror = (err: any) => {
-            let reason: string = "";
+            let reason = "";
             try {
                 reason = JSON.stringify(err);
             } catch (error) {

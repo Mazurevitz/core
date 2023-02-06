@@ -1,10 +1,9 @@
-import resolve from '@rollup/plugin-node-resolve'
-import commonjs from '@rollup/plugin-commonjs'
-import typescript from 'rollup-plugin-typescript2'
-import { terser } from "rollup-plugin-terser";
-import copy from 'rollup-plugin-copy';
+const resolve = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
+const typescript = require('@rollup/plugin-typescript');
+const copy = require('rollup-plugin-copy');
 const packageJson = require('./package.json');
-import del from 'rollup-plugin-delete';
+const del = require('rollup-plugin-delete');
 
 const globals = {
     react: 'React',
@@ -12,7 +11,7 @@ const globals = {
     '@glue42/react-hooks': "glue-hooks"
 };
 
-export default [
+module.exports = [
     {
         input: 'src/index.tsx',
         output: [
@@ -37,9 +36,6 @@ export default [
             }),
             commonjs(),
             typescript(),
-            terser({
-                compress: true,
-            }),
             copy({
                 targets: [
                     { src: './node_modules/@glue42/workspaces-ui-core/dist/styles/*', dest: 'dist/styles' },

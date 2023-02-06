@@ -42,41 +42,42 @@
         "react": ">=16.13.1",
         "react-dom": ">=16.13.1"
     },
-    "devDependencies": {
-        "@testing-library/react-hooks": "^3.2.1",
-        "@types/enzyme": "^3.10.5",
-        "@types/enzyme-adapter-react-16": "^1.0.6",
-        "@types/jest": "^25.2.1",
-        "@types/react": "^16.9.23",
-        "@types/react-dom": "^16.9.5",
-        "@typescript-eslint/eslint-plugin": "^1.0.0",
-        "@typescript-eslint/parser": "^1.0.0",
-        "enzyme": "^3.11.0",
-        "enzyme-adapter-react-16": "^1.15.2",
-        "eslint": "^8.15.0",
-        "eslint-config-prettier": "^6.10.0",
-        "eslint-plugin-jest": "^23.8.2",
-        "eslint-plugin-react": "^7.19.0",
-        "jest": "^28.1.0",
-        "prettier": "^1.19.1",
-        "prop-types": "^15.7.2",
-        "react": "^16.13.1",
-        "react-dom": "^16.13.1",
-        "rollup": "^2.0.2",
-        "rollup-plugin-cleaner": "^1.0.0",
-        "rollup-plugin-commonjs": "^10.1.0",
-        "rollup-plugin-json": "^4.0.0",
-        "rollup-plugin-node-resolve": "^5.2.0",
-        "rollup-plugin-terser": "^7.0.1",
-        "rollup-plugin-typescript2": "^0.26.0",
-        "ts-jest": "^25.2.1",
-        "ts-loader": "^6.2.1",
-        "typescript": "^3.8.3"
+    "peerDependenciesMeta": {
+        "react": {
+            "autoinstall": false
+        },
+        "react-dom": {
+            "autoinstall": false
+        }
     },
     "dependencies": {
-        "@glue42/desktop": "^5.14.0",
+        "@glue42/desktop": "^5.18.2",
         "@glue42/web": "^2.13.0",
         "@glue42/web-platform": "^1.20.0",
         "prop-types": "^15.7.2"
+    },
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^23.0.5",
+        "@rollup/plugin-json": "^5.0.2",
+        "@rollup/plugin-node-resolve": "^15.0.1",
+        "@rollup/plugin-terser": "^0.2.0",
+        "@types/jest": "^29.2.4",
+        "@types/react": "^18.0.26",
+        "@types/react-dom": "^18.0.9",
+        "@typescript-eslint/eslint-plugin": "^5.46.1",
+        "@typescript-eslint/parser": "^5.46.1",
+        "eslint": "^8.29.0",
+        "eslint-config-prettier": "^8.5.0",
+        "eslint-plugin-jest": "^27.1.7",
+        "eslint-plugin-react": "^7.31.11",
+        "jest": "^29.3.1",
+        "prettier": "^2.8.1",
+        "prop-types": "^15.8.1",
+        "rollup": "^3.7.4",
+        "rollup-plugin-cleaner": "^1.0.0",
+        "rollup-plugin-typescript2": "^0.34.1",
+        "ts-jest": "^29.0.3",
+        "ts-loader": "^9.4.2",
+        "typescript": "^4.9.4"
     }
 }

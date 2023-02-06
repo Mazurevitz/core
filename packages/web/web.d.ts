@@ -264,7 +264,7 @@ export namespace Glue42Web {
              * Notifies when the window focus is changed.
              * @param callback Callback function to handle the event. Returns an unsubscribe function.
              */
-            onFocusChange(callback: (window: WebWindow) => void): UnsubscribeFunction;
+            onFocusChanged(callback: (window: WebWindow) => void): UnsubscribeFunction;
         }
         export interface Settings {
 
@@ -459,7 +459,7 @@ export namespace Glue42Web {
             metadata?: any;
 
             /** Version of the Layout. */
-            version?: string;
+            version?: number;
         }
 
         /**

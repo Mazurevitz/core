@@ -13,7 +13,7 @@ export interface ServerSubscriptionInfo {
 export interface ServerMethodInfo {
     definition: Glue42Core.AGM.MethodDefinition;
     protocolState: {
-        branchKeyToStreamIdMap?: Array<{ key: string, streamId: string }> // GW1, GW3
+        branchKeyToStreamIdMap?: { key: string, streamId: string }[] // GW1, GW3
         subscriptionsMap?: { [id: string]: ServerSubscriptionInfo }; // GW3
     };
     repoId: string;

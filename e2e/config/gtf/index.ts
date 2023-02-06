@@ -70,13 +70,15 @@ const getBaseGluePlatformConfig = (): Glue42WebPlatform.Config => {
     return gluePlatformConfig;
 }
 
-const baseGlueSetup = async() => {
-    const gluePlatformConfig =  getBaseGluePlatformConfig();
+const baseGlueSetup = async (): Promise<Glue42Web.API> => {
+    const gluePlatformConfig = getBaseGluePlatformConfig();
 
     const { glue, platform } = await (GlueWebPlatform as (config?: Glue42WebPlatform.Config) => Promise<{ glue: Glue42Web.API, platform: Glue42WebPlatform.API }>)(gluePlatformConfig);
 
     window.glue = glue;
     window.platform = platform;
+
+    return glue;
 }
 
 const setupNotifications = () => {
@@ -133,7 +135,7 @@ const startPuppetGtf = async () => {
 };
 
 const startGtf = async () => {
-    await baseGlueSetup();
+    const glue = await baseGlueSetup();
 
     const gtfCore = new GtfCore(glue);
     const gtfLogger = new GtfLogger(glue);
@@ -153,7 +155,7 @@ const startGtf = async () => {
     );
 };
 
-const getGtfWithFdc3 = (gtfCore: GtfCore) => {
+const getGtfWithFdc3 = (gtfCore: GtfCore, glue: Glue42Web.API) => {
     return Object.assign(
         gtfCore,
         { fdc3: new GtfFdc3(glue) },
@@ -164,7 +166,7 @@ const getGtfWithFdc3 = (gtfCore: GtfCore) => {
     );
 }
 
-const startFdc3Gtf = async(): Promise<void> => {
+const startFdc3Gtf = async (): Promise<void> => {
     const fdc3ReadyPromise = new Promise<void>((resolve) => {
         if (window.fdc3) {
             resolve();
@@ -175,11 +177,11 @@ const startFdc3Gtf = async(): Promise<void> => {
 
     await fdc3ReadyPromise;
 
-    await baseGlueSetup();
-    
+    const glue = await baseGlueSetup();
+
     const gtfCore = new GtfCore(glue);
 
-    window.gtf = getGtfWithFdc3(gtfCore);
+    window.gtf = getGtfWithFdc3(gtfCore, glue);
 }
 
 if (runningMode === "Puppet") {

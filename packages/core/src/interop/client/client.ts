@@ -341,7 +341,7 @@ export default class Client {
             const timeout = additionalOptions.methodResponseTimeoutMs;
             // ts be happy
             const additionalOptionsCopy: Glue42Core.AGM.InvokeOptions = additionalOptions;
-            const invokePromises: Array<Promise<InvokeResultMessage>> = serversMethodMap.map(
+            const invokePromises: Promise<InvokeResultMessage>[] = serversMethodMap.map(
                 (serversMethodPair) => {
                     const invId = random();
                     const method = serversMethodPair.methods[0];

@@ -30,7 +30,7 @@ export default class WebPlatformTransport implements Transport {
     private connectionReject: ((reason?: unknown) => void) | undefined;
     private port: MessagePort | undefined;
     private myClientId: string | undefined;
-    private children: Array<{ grandChildId: string; source: Window; connected: boolean; origin: string }> = [];
+    private children: { grandChildId: string; source: Window; connected: boolean; origin: string }[] = [];
 
     private extContentAvailable = false;
     private extContentConnecting = false;

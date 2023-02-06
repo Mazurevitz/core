@@ -61,7 +61,7 @@ export class WebWindowModel {
             updateContext: this.updateContext.bind(this),
             setContext: this.setContext.bind(this),
             onContextUpdated: this.onContextUpdated.bind(this),
-            onFocusChange: this.onFocusChange.bind(this)
+            onFocusChanged: this.onFocusChanged.bind(this)
         };
 
         return this.me;
@@ -72,7 +72,7 @@ export class WebWindowModel {
         return result.url;
     }
 
-    private onFocusChange(callback: (window: Glue42Web.Windows.WebWindow) => void): UnsubscribeFunction {
+    private onFocusChanged(callback: (window: Glue42Web.Windows.WebWindow) => void): UnsubscribeFunction {
         if (typeof callback !== "function") {
             throw new Error("Cannot subscribe to context changes, because the provided callback is not a function!");
         }

@@ -3,5 +3,9 @@
     "compilerOptions": {
         "module": "commonjs",
         "resolveJsonModule": true
-    }
+    },
+    "include": [
+        "./src/**/*",
+        "./tests/**/*"
+    ],
 }

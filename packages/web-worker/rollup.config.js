@@ -1,12 +1,12 @@
-import typescript from 'rollup-plugin-typescript2';
-import { terser } from 'rollup-plugin-terser';
-import commonjs from '@rollup/plugin-commonjs';
-import resolve from '@rollup/plugin-node-resolve';
-import json from '@rollup/plugin-json';
-import pkg from './package.json';
-import del from 'rollup-plugin-delete';
+const typescript = require('@rollup/plugin-typescript');
+const terser = require('@rollup/plugin-terser');
+const commonjs = require('@rollup/plugin-commonjs');
+const resolve = require('@rollup/plugin-node-resolve');
+const json = require('@rollup/plugin-json');
+const pkg = require('./package.json');
+const del = require('rollup-plugin-delete');
 
-export default {
+module.exports = {
     input: 'src/index.ts',
     output: [
         {
@@ -19,7 +19,6 @@ export default {
             file: './dist/web.worker.umd.min.js',
             name: 'web.worker.min',
             format: 'umd',
-            sourcemap: true,
             plugins: [terser()]
         },
         {

@@ -195,7 +195,7 @@ export class GW3Bridge implements ContextBridge {
     private _protocolVersion?: number = undefined;
 
     private _contextsTempCache: { [contextName: string]: any } = {};
-    private _contextsSubscriptionsCache: Array<{ contextName: string; subKey: ContextSubscriptionKey; callback: (data: any, delta: any, removed: string[], key: ContextSubscriptionKey, extraData?: any) => void }> = [];
+    private _contextsSubscriptionsCache: { contextName: string; subKey: ContextSubscriptionKey; callback: (data: any, delta: any, removed: string[], key: ContextSubscriptionKey, extraData?: any) => void }[] = [];
     private _systemContextsSubKey: number | undefined;
 
     private get protocolVersion(): number {

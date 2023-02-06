@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import domainSession from "./gw3Domain";
 import { Glue42Core } from "../../../glue";
 import { default as CallbackRegistryFactory, CallbackRegistry } from "callback-registry";
@@ -6,7 +7,7 @@ import Connection from "../connection";
 import { Logger } from "../../logger/logger";
 import { WelcomeMessage, CreateTokenReq, CreateTokenRes } from "./messages";
 export default class GW3ProtocolImpl implements GW3Protocol {
-    public protocolVersion: number = 3;
+    public protocolVersion = 3;
 
     private datePrefix = "#T42_DATE#";
     private datePrefixLen = this.datePrefix.length;
@@ -132,7 +133,7 @@ export default class GW3ProtocolImpl implements GW3Protocol {
                 try {
                     const token = await this.getNewGWToken();
                     config.gatewayToken = token;
-                } catch (e) {
+                } catch (e: any) {
                     this.logger.warn(`failed to get GW token when reconnecting ${e?.message || e}`);
                 }
             }
@@ -230,7 +231,7 @@ export default class GW3ProtocolImpl implements GW3Protocol {
             }
             this.setLoggedIn(true);
             return welcomeMsg.resolved_identity;
-        } catch (err) {
+        } catch (err: any) {
             this.logger.error("error sending hello message - " + (err.message || err.msg || err.reason || err), err);
             throw err;
         } finally {

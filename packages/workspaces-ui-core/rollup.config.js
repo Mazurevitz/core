@@ -1,13 +1,12 @@
-import resolve from '@rollup/plugin-node-resolve'
-import commonjs from '@rollup/plugin-commonjs'
-import typescript from 'rollup-plugin-typescript2'
-import external from 'rollup-plugin-peer-deps-external';
-import { terser } from "rollup-plugin-terser";
-import copy from "rollup-plugin-copy";
-import execute from "rollup-plugin-execute";
-import del from 'rollup-plugin-delete';
+const resolve = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
+const typescript = require('rollup-plugin-typescript2');
+const external = require('rollup-plugin-peer-deps-external');
+const copy = require("rollup-plugin-copy");
+const execute = require("rollup-plugin-execute");
+const del = require('rollup-plugin-delete');
 
-export default [
+module.exports = [
     {
         input: 'src/export.ts',
         plugins: [
@@ -18,9 +17,6 @@ export default [
                 mainFields: ["main", "module", "browser"],
             }),
             external(),
-            terser({
-                compress: true,
-            }),
             copy({
                 targets: [
                     { src: './assets/css/*.css', dest: 'dist/styles' },

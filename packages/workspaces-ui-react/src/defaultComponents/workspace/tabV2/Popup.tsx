@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import { requestFocus } from "../../..";
+import workspacesManagerDecorator from "../../../workspacesManager";
 import { Size } from "../../../types/internal";
 import useWorkspaceWindowClicked from "../../../useWorkspaceWindowClicked";
 import { WorkspaceLockConfig } from "./types";
@@ -9,6 +9,7 @@ interface PopupProps {
     buttonBounds: { left: number, top: number, right: number, bottom: number };
     workspaceId: string;
     lockConfig: WorkspaceLockConfig;
+    children?: React.ReactNode;
     hidePopup: () => void;
 }
 
@@ -70,7 +71,7 @@ const WorkspaceTabV2Popup: React.FC<PopupProps> = ({ workspaceId, buttonBounds, 
     }, []);
 
     useEffect(() => {
-        requestFocus();
+        workspacesManagerDecorator.requestFocus();
     }, []);
 
     useWorkspaceWindowClicked(() => {
@@ -86,7 +87,7 @@ const WorkspaceTabV2Popup: React.FC<PopupProps> = ({ workspaceId, buttonBounds, 
 
     const childrenWithProps = React.Children.map(children, child => {
         if (React.isValidElement(child)) {
-            return React.cloneElement<PopupChildProps>(child, { resizePopup });
+            return React.cloneElement<PopupChildProps>(child as React.ReactElement<any, string | React.JSXElementConstructor<any>>, { resizePopup });
         }
         return child;
     });

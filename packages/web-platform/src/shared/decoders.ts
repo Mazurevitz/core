@@ -205,7 +205,8 @@ export const glueLayoutDecoder: Decoder<Glue42Web.Layouts.Layout> = object({
         workspaceFrameComponentDecoder
     )),
     context: optional(anyJson()),
-    metadata: optional(anyJson())
+    metadata: optional(anyJson()),
+    version: optional(number())
 });
 
 export const applicationDetailsDecoder: Decoder<Glue42Web.AppManager.DefinitionDetails> = object({

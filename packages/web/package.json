@@ -17,7 +17,7 @@
         "tslint": "tslint -t codeFrame ./src/**/*.ts",
         "validate-changelog": "node ./build/validate-config.js",
         "docs": "typedoc --options typedoc.json ./src",
-        "test": "echo \"Error: no test specified\"",
+        "test": "echo no tests found",
         "coverage": "nyc npm run test",
         "publish:beta": "npm publish --tag beta",
         "build": "rollup -c",
@@ -38,31 +38,31 @@
         "@glue42/workspaces-api": "^1.19.0",
         "callback-registry": "^2.6.0",
         "decoder-validate": "0.0.2",
-        "idb": "^5.0.4",
-        "nanoid": "^3.3.4",
-        "shortid": "^2.2.15"
-    },
-    "devDependencies": {
-        "@rollup/plugin-commonjs": "^13.0.0",
-        "@rollup/plugin-json": "^4.1.0",
-        "@rollup/plugin-node-resolve": "^8.1.0",
-        "@types/chai": "^4.2.7",
-        "@types/mocha": "^5.2.7",
-        "@types/node": "^12.11.1",
-        "@types/shortid": "0.0.29",
-        "chai": "4.0.2",
-        "copyfiles": "^2.4.1",
-        "deep-equal": "1.0.1",
-        "mocha": "^10.0.0",
-        "nyc": "^15.1.0",
-        "rollup": "^1.31.1",
-        "rollup-plugin-delete": "^2.0.0",
-        "rollup-plugin-terser": "^7.0.0",
-        "rollup-plugin-typescript2": "^0.27.2",
-        "tslint": "5.11.0",
-        "typescript": "^3.7.4"
+        "idb": "^7.1.1",
+        "nanoid": "^4.0.0",
+        "shortid": "^2.2.16"
     },
     "publishConfig": {
         "registry": "https://registry.npmjs.org"
+    },
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^23.0.5",
+        "@rollup/plugin-json": "^5.0.2",
+        "@rollup/plugin-node-resolve": "^15.0.1",
+        "@rollup/plugin-terser": "^0.2.0",
+        "@types/chai": "^4.3.4",
+        "@types/mocha": "^10.0.1",
+        "@types/node": "^18.11.15",
+        "@types/shortid": "^0.0.29",
+        "chai": "^4.3.7",
+        "copyfiles": "^2.4.1",
+        "deep-equal": "^2.1.0",
+        "mocha": "^10.2.0",
+        "nyc": "^15.1.0",
+        "rollup": "^3.7.4",
+        "rollup-plugin-delete": "^2.0.0",
+        "rollup-plugin-typescript2": "^0.34.1",
+        "tslint": "^6.1.3",
+        "typescript": "^4.9.4"
     }
 }

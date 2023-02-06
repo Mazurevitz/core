@@ -2,7 +2,7 @@
 import { Glue42WebWorkerFactoryFunction, WebWorkerConfig } from "../web.worker";
 import { dbName, dbVersion, platformOpenTimeoutMS, platformPingTimeoutMS, serviceWorkerBroadcastChannelName } from "./constants";
 import { webWorkerConfigDecoder } from "./decoders";
-import { generate } from "shortid";
+import { nanoid } from "nanoid";
 import { IDBPDatabase, openDB } from "idb";
 
 let openDbPromise: Promise<IDBPDatabase<any>>;
@@ -108,7 +108,7 @@ export const raiseGlueNotification = async (settings: any): Promise<void> => {
     const glueData = {
         clickInterop: settings.clickInterop,
         actions: settings.actions,
-        id: generate()
+        id: nanoid()
     };
 
     if (options.data) {

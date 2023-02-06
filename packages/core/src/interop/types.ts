@@ -66,14 +66,14 @@ export interface SubscriptionInner {
     subscription?: UserSubscription;
     success: (sub: Glue42Core.AGM.Subscription) => void;
     error: (err: SubscribeError) => void;
-    trackedServers: Array<{
+    trackedServers: {
         serverId: string;
         subscriptionId?: string
-    }>;
+    }[];
     handlers: {
-        onData: Array<(data: Glue42Core.AGM.StreamData) => void>;
-        onClosed: Array<(data: Glue42Core.AGM.OnClosedInfo) => void>;
-        onConnected: Array<(server: Glue42Core.AGM.Instance, reconnect: boolean) => void>;
+        onData: ((data: Glue42Core.AGM.StreamData) => void)[];
+        onClosed: ((data: Glue42Core.AGM.OnClosedInfo) => void)[];
+        onConnected: ((server: Glue42Core.AGM.Instance, reconnect: boolean) => void)[];
         // onFailed: []
     };
     queued: {

@@ -15,6 +15,7 @@
         "strictPropertyInitialization": true,
         "strictBindCallApply": true,
         "strictFunctionTypes": true,
+        "skipLibCheck": true,
         "removeComments": true,
         "lib": [
             "dom",
@@ -26,10 +27,10 @@
         ]
     },
     "include": [
-        "./src/**/*",
-        "./tests/**/*"
+        "./src/**/*"
     ],
     "exclude": [
+        "./tests/**/*",
         "node_modules",
         "dist"
     ]

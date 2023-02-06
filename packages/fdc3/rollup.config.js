@@ -1,12 +1,11 @@
-import typescript from 'rollup-plugin-typescript2';
-import { terser } from 'rollup-plugin-terser';
-import commonjs from '@rollup/plugin-commonjs';
-import resolve from '@rollup/plugin-node-resolve';
-import json from '@rollup/plugin-json';
-import pkg from './package.json';
-import del from 'rollup-plugin-delete';
+const typescript = require('rollup-plugin-typescript2');
+const commonjs = require('@rollup/plugin-commonjs');
+const resolve = require('@rollup/plugin-node-resolve');
+const json = require('@rollup/plugin-json');
+const pkg = require('./package.json');
+const del = require('rollup-plugin-delete');
 
-export default {
+module.exports = {
     input: 'src/index.ts',
     output: [
         {
@@ -18,8 +17,7 @@ export default {
         {
             file: pkg.module,
             format: 'es',
-            sourcemap: true,
-            plugins: [terser()]
+            sourcemap: true
         },
     ],
     external: [

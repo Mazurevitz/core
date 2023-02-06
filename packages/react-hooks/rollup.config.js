@@ -1,10 +1,10 @@
-import typescript from 'rollup-plugin-typescript2';
-import { terser } from 'rollup-plugin-terser';
-import commonjs from 'rollup-plugin-commonjs';
-import resolve from 'rollup-plugin-node-resolve';
-import cleaner from 'rollup-plugin-cleaner';
-import json from 'rollup-plugin-json';
-import pkg from './package.json';
+const typescript = require('rollup-plugin-typescript2');
+const terser = require('@rollup/plugin-terser');
+const commonjs = require('@rollup/plugin-commonjs');
+const resolve = require('@rollup/plugin-node-resolve');
+const cleaner = require('rollup-plugin-cleaner');
+const json = require('@rollup/plugin-json');
+const pkg = require('./package.json');
 
 const globals = {
     react: 'React',
@@ -13,7 +13,7 @@ const globals = {
     '@glue42/web': 'GlueWeb',
 };
 
-export default {
+module.exports = {
     input: 'src/index.ts',
     output: [
         {
@@ -27,7 +27,6 @@ export default {
             file: './dist/glue-hooks.umd.min.js',
             name: 'glue-hooks.min',
             format: 'umd',
-            sourcemap: true,
             globals,
             plugins: [terser()]
         },

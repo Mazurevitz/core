@@ -4,8 +4,8 @@
   "private": true,
   "homepage": "./",
   "dependencies": {
-    "@glue42/desktop": "^5.14.0",
-    "@glue42/react-hooks": "2.8.0",
+    "@glue42/desktop": "^5.18.2",
+    "@glue42/react-hooks": "^2.11.1",
     "@glue42/theme": "^4.0.5",
     "@glue42/web": "^2.13.0",
     "@glue42/web-platform": "^1.20.0",
@@ -46,7 +46,7 @@
     "@types/node": "^12.19.3",
     "@types/react": "^16.9.56",
     "@types/react-dom": "^16.9.9",
-    "react-scripts": "4.0.1",
+    "react-scripts": "^5.0.1",
     "typescript": "^4.0.5",
     "web-vitals": "^0.2.4"
   }

@@ -1,4 +1,4 @@
-import { Glue42Core } from "../../glue";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ContextDelta } from "./bridges/types";
 import { Logger } from "../logger/logger";
 
@@ -57,7 +57,7 @@ export function applyContextDelta(
         }
 
         return context;
-    } catch (e) {
+    } catch (e: any) {
         logger?.error(`error applying context delta ${JSON.stringify(delta)} on context ${JSON.stringify(context)}`, e);
         return context;
     }

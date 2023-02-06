@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Glue42Core } from "../../../../glue";
 import { Protocol, MetricsSettings } from "../../types";
 import { composeMsgForRootStateMetric, getMetricValueByType, normalizeMetricName, serializeMetric } from "./serializer";
@@ -13,7 +14,7 @@ export default function (connection: Connection, config: MetricsSettings): Proto
 
     const init = (repo: Glue42Core.Metrics.Repository): void => {
         let resolveReadyPromise: (() => void) | undefined;
-        joinPromise = new Promise((resolve) => {
+        joinPromise = new Promise<void>((resolve) => {
             resolveReadyPromise = resolve;
         });
 

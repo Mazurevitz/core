@@ -240,7 +240,7 @@ export default class Connection implements Glue42Core.Connection.API {
             this.logger.trace(`Logged in with identity: ${JSON.stringify(identity)}`);
             timer("connection").mark("protocol-logged-in");
             return identity;
-        } catch (error) {
+        } catch (error: any) {
             if (this._switchInProgress) {
                 this.logger.trace("An error while logging in after a transport swap, preparing a default swap.");
                 this.prepareDefaultSwap();
@@ -290,7 +290,7 @@ export default class Connection implements Glue42Core.Connection.API {
                 if (handler !== undefined) {
                     try {
                         handler(message);
-                    } catch (error) {
+                    } catch (error: any) {
                         try {
                             // logger might not be there yet
                             this.logger.error(`Message handler failed with ${error.stack}`, error);

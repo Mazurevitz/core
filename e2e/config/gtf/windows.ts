@@ -51,7 +51,7 @@ export class GtfWindows implements Gtf.Windows {
         expect(webWindow.updateContext).to.be.a("function");
         expect(webWindow.setContext).to.be.a("function");
         expect(webWindow.onContextUpdated).to.be.a("function");
-        expect(webWindow.onFocusChange).to.be.a("function");
+        expect(webWindow.onFocusChanged).to.be.a("function");
     }
 
     public async compareWindows(actualWindow: Glue42Web.Windows.WebWindow, expectedWindow: Glue42Web.Windows.WebWindow): Promise<boolean> {

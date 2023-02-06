@@ -1,6 +1,6 @@
 // cannot implement more focusing tests with webWindow.focus due to transient activation limitations
 // need to extend e2e with selenium for reliable focusing
-describe("onFocusChange()", () => {
+describe("onFocusChanged()", () => {
 
     before(() => {
         return coreReady;
@@ -11,13 +11,13 @@ describe("onFocusChange()", () => {
     });
 
     it("should not throw when called with a function", async () => {
-        const unsub = glue.windows.my().onFocusChange(() => {});
+        const unsub = glue.windows.my().onFocusChanged(() => {});
 
         gtf.addWindowHook(unsub);
     });
 
     it("should return a function", async () => {
-        const unsub = glue.windows.my().onFocusChange(() => {});
+        const unsub = glue.windows.my().onFocusChanged(() => {});
 
         gtf.addWindowHook(unsub);
 
@@ -35,7 +35,7 @@ describe("onFocusChange()", () => {
     ].forEach((input) => {
         it(`should throw when called with an invalid argument - ${JSON.stringify(input)}`, async () => {
             try {
-                const unsub = glue.windows.my().onFocusChange(input);
+                const unsub = glue.windows.my().onFocusChanged(input);
 
                 gtf.addWindowHook(unsub);
 

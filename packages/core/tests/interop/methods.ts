@@ -207,7 +207,7 @@ describe("methods", () => {
             displayName,
         };
         await glue.interop.register(method, () => {/** DO NOTHING */ });
-        await new Promise((resolve) => {
+        await new Promise<void>((resolve) => {
             const unsub = glue2.interop.methodAdded((addedMethod) => {
                 if (addedMethod.name === name) {
                     unsub();
