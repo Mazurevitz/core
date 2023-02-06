@@ -39,6 +39,6 @@ jobs:
       run: npm run test
 
     - name: Execute General E2E
-      run: pm run e2e
+      run: npm run e2e
       env:
         CI: true
