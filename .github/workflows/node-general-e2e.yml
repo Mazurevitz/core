@@ -39,11 +39,6 @@ jobs:
       run: npm run test
 
     - name: Execute General E2E
-      uses: nick-fields/retry@v2
-      with:
-        command: npm run e2e
-        timeout_minutes: 180
-        retry_on: error
-        max_attempts: 3
+      run: pm run e2e
       env:
         CI: true
