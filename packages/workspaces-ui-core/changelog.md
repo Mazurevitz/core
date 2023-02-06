@@ -1,3 +1,5 @@
+1.13.0
+feat: updated all dependencies to the latest major versions
 1.12.1
 chore: bump due to dependencies update
 1.12.0

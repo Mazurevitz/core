@@ -1,3 +1,5 @@
+1.20.0
+feat: updated all dependencies to the latest major versions
 1.19.0
 fix: layouts import in Enterprise now uses a new operation to import all layouts instead of one by one
 feat: added isSelected to the workspace window typings and enabled the focused property for Core and Core+

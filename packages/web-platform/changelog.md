@@ -1,3 +1,5 @@
+1.21.0
+feat: updated all dependencies to the latest major versions
 1.20.0
 feat: introduced raise operation for domain intents to handle logic related to raising an intent and opening the Intents Resolver UI 
 fix: improved the platform-platform detection

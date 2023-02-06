@@ -1,3 +1,5 @@
+1.2.0
+feat: updated all dependencies to the latest major versions
 1.1.0
 feat: reworked visualization of handlers
 1.0.3

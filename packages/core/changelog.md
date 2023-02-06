@@ -1,3 +1,5 @@
+5.8.0
+feat: updated all dependencies to the latest major versions
 5.7.10
 chore: added missing changelog to the published bundle
 5.7.9

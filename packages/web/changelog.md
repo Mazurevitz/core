@@ -1,3 +1,5 @@
+2.14.0
+feat: updated all dependencies to the latest major versions
 2.13.0
 feat: added handlers prop to IntentRequest
 feat: added methodResponseTimeoutMs in the intents config passed to GlueWeb factory function

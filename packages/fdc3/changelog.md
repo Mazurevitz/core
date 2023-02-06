@@ -1,3 +1,5 @@
+3.1.0
+feat: updated all dependencies to the latest major versions
 3.0.1
 chore: updated rollup build to use a clean dist dir
 3.0.0

@@ -1,3 +1,5 @@
+2.4.0
+feat: updated all dependencies to the latest major versions
 2.3.8
 fix: activeItemIndex becomes out of sync when closing a component which is not active
 2.3.7
