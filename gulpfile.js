@@ -17,7 +17,7 @@ const replace = require('@rollup/plugin-replace');
 // const sync = require('./scripts/preversion/sync.js');
 
 const stableBranch = 'master';
-const releaseBranch = 'release-V2';
+const releaseBranch = 'release-V3';
 const ignored = ['.git', '.log', 'node_modules', 'packages', '.md', 'package-lock', '.vscode', 'demos', 'live-examples', '.cache', 'archive', 'e2e', 'tutorials', 'templates'];
 const packagesDirectory = join(__dirname, '/packages/');
 let packagesDirNamesToRelease = [];
