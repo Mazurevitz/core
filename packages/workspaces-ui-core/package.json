@@ -1,6 +1,6 @@
 {
     "name": "@glue42/workspaces-ui-core",
-    "version": "1.12.1",
+    "version": "1.13.0",
     "description": "Glue42's vanilla JS implementation of the workspaces ui component",
     "module": "./dist/export.js",
     "main": "./dist/export.js",
@@ -37,10 +37,10 @@
     "license": "MIT",
     "dependencies": {
         "@glue42/desktop": "^5.18.2",
-        "@glue42/golden-layout": "^2.3.8",
+        "@glue42/golden-layout": "^2.4.0",
         "@glue42/theme": "^4.0.6",
-        "@glue42/web": "^2.13.0",
-        "@glue42/workspaces-api": "^1.19.0",
+        "@glue42/web": "^2.14.0",
+        "@glue42/workspaces-api": "^1.20.0",
         "callback-registry": "^2.7.2",
         "jquery": "^3.6.2",
         "resize-observer-polyfill": "^1.5.1",
