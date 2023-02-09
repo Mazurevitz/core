@@ -125,6 +125,11 @@ export interface BundleWorkspaceRequest {
     operationArguments: BundleWorkspaceArguments;
 }
 
+export interface BundleItemRequest {
+    operation: "bundleItem";
+    operationArguments: BundleItemArguments;
+}
+
 export interface MoveFrameRequest {
     operation: "moveFrame";
     operationArguments: MoveFrameArguments;
@@ -498,6 +503,11 @@ export interface BundleWorkspaceArguments {
     workspaceId: string;
 }
 
+export interface BundleItemArguments {
+    type: "row" | "column";
+    itemId: string;
+}
+
 export interface GenerateLayoutArguments {
     workspaceId: string;
     name: string;
@@ -520,7 +530,7 @@ export type ControlArguments = SaveLayoutRequest | DeleteLayoutRequest |
     ExportAllLayoutsRequest | OpenWorkspaceRequest | GetWorkspaceSnapshotRequest | GetAllWorkspacesSummariesRequest |
     CloseItemRequest | MaximizeItemRequest | RestoreItemRequest | AddWindowRequest | AddContainerRequest | SetItemTitleRequest |
     AddWorkspaceChildrenRequest | EjectRequest | CreateWorkspaceRequest | ForceLoadWindowRequest | FocusItemRequest |
-    BundleWorkspaceRequest | IsWindowInWorkspaceRequest | GetFrameSummaryRequest | MoveFrameRequest | GetFrameSnapshotRequest |
+    BundleWorkspaceRequest | BundleItemRequest | IsWindowInWorkspaceRequest | GetFrameSummaryRequest | MoveFrameRequest | GetFrameSnapshotRequest |
     GetSnapshotRequest | MoveWindowToRequest | GenerateLayoutRequest | PingRequest | HibernateWorkspaceRequest | ResumeWorkspaceRequest |
     LockWorkspaceRequest | LockContainerRequest | LockWindowRequest | ResizeItemRequest | PinWorkspaceRequest | UnpinWorkspaceRequest |
     GetWorkspaceIconRequest | SetWorkspaceIconRequest | InitFrameRequest | CreateFrameRequest | InitFrameFromSnapshotRequest | GetWorkspacesLayoutsRequest |

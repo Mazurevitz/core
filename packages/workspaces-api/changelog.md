@@ -1,3 +1,5 @@
+1.20.1
+feat: added bundleTo methods to the group
 1.20.0
 feat: updated all dependencies to the latest major versions
 1.19.0

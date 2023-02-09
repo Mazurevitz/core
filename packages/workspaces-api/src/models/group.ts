@@ -59,7 +59,7 @@ export class Group implements Glue42Workspaces.Group {
         return getBase(this).getAllowExtract(this);
     }
 
-    public get allowReorder():boolean{
+    public get allowReorder(): boolean {
         return getBase(this).getAllowReorder(this);
     }
 
@@ -196,6 +196,16 @@ export class Group implements Glue42Workspaces.Group {
         return getBase(this).setSize(this, config.width, config.height);
     }
 
+    public async bundleToRow(): Promise<void> {
+        await getBase(this).bundleTo(this, "row");
+        await this.workspace.refreshReference();
+    }
+
+    public async bundleToColumn(): Promise<void> {
+        await getBase(this).bundleTo(this, "column");
+        await this.workspace.refreshReference();
+    }
+
     public async onLockConfigurationChanged(callback: (config: Glue42Workspaces.GroupLockConfig) => void): Promise<Glue42Workspaces.Unsubscribe> {
         checkThrowCallback(callback);
         const id = getBase(this).getId(this);
@@ -207,7 +217,7 @@ export class Group implements Glue42Workspaces.Group {
                 allowDropLeft: this.allowDropLeft,
                 allowDropTop: this.allowDropTop,
                 allowDropRight: this.allowDropRight,
-                allowDropBottom:this.allowDropBottom,
+                allowDropBottom: this.allowDropBottom,
                 allowExtract: this.allowExtract,
                 allowReorder: this.allowReorder,
                 showAddWindowButton: this.showAddWindowButton,

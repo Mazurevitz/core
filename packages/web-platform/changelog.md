@@ -1,3 +1,5 @@
+1.21.1
+feat: added support for bundleItemTo
 1.21.0
 feat: updated all dependencies to the latest major versions
 1.20.0

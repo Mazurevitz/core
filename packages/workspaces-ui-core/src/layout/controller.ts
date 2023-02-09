@@ -272,6 +272,23 @@ export class LayoutController {
         workspace.layout.root.replaceChild(oldChild, newChild);
     }
 
+    public bundleItem(itemId: string, type: "row" | "column"): void {
+        const oldChild = store.getContainer(itemId);
+
+        if (!oldChild) {
+            throw new Error(`Cannot find item ${itemId} to bundle it into a ${type}`);
+        }
+
+        if (oldChild.parent.type === type) {
+            throw new Error(`Cannot bundle item ${itemId} to ${type} because its parent is a ${oldChild.parent.type}`);
+        }
+
+        const oldChildConfig = this._wrapperFactory.getContainerWrapper({ itemId })?.config
+        const newChild: GoldenLayout.ItemConfig = { type, content: [oldChildConfig], workspacesConfig: {} };
+
+        oldChild.parent.replaceChild(oldChild, newChild);
+    }
+
     public hideAddButton(workspaceId: string): void {
         $(`#nestHere${workspaceId}`).children(".add-button").hide();
     }

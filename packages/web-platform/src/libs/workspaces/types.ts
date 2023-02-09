@@ -46,6 +46,7 @@ export type WorkspacesOperationsTypes = "isWindowInWorkspace" |
     "addWindow" |
     "addContainer" |
     "bundleWorkspace" |
+    "bundleItem" |
     "changeFrameState" |
     "getFrameState" |
     "getFrameBounds" |
@@ -66,9 +67,9 @@ export type WorkspacesOperationsTypes = "isWindowInWorkspace" |
     "getPlatformFrameId" |
     "getWorkspaceWindowsOnLayoutSaveContext" |
     "getWorkspacesLayouts" |
-    "setMaximizationBoundary" | 
+    "setMaximizationBoundary" |
     "operationCheck" |
-    "getWorkspaceWindowFrameBounds" | 
+    "getWorkspaceWindowFrameBounds" |
     "focusChange";
 
 export interface FrameQueryConfig {
@@ -322,9 +323,14 @@ export interface AddContainerConfig {
     parentType: "row" | "column" | "group" | "workspace";
 }
 
-export interface BundleConfig {
+export interface BundleWorkspaceConfig {
     type: "row" | "column";
     workspaceId: string;
+}
+
+export interface BundleItemConfig {
+    type: "row" | "column";
+    itemId: string;
 }
 
 export interface WorkspaceSelector {

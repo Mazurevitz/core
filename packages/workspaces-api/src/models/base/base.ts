@@ -371,6 +371,13 @@ export class Base {
         await this.getMyWorkspace(modelData.parent).refreshReference();
     }
 
+    public async bundleTo(model: Group, type: "row" | "column") {
+        const modelData = getData(this, model) as ParentPrivateData;
+        const { controller, id } = modelData;
+
+        await controller.bundleItemTo(type, id);
+    }
+
     public async processLocalSubscription(model: SubParentTypes, subscriptionConfig: SubscriptionConfig): Promise<Glue42Workspaces.Unsubscribe> {
         return getData(this, model).controller.processLocalSubscription(subscriptionConfig, this.getId(model))
     }

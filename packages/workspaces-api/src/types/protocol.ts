@@ -219,6 +219,11 @@ export interface GetPlatformFrameIdResult {
     id?: string;
 }
 
+export interface OperationCheckResult {
+    isSupported: boolean;
+}
+
+
 // #endregion
 
 // #region outgoing
@@ -274,6 +279,10 @@ export interface LoadingAnimationConfig {
     type: "workspace";
 }
 
+export interface OperationCheckConfig {
+    operation: string;
+}
+
 export interface MoveFrameConfig {
     itemId: string;
     top?: number;
@@ -303,9 +312,14 @@ export interface AddContainerConfig {
     parentType: "row" | "column" | "group" | "workspace";
 }
 
-export interface BundleConfig {
+export interface BundleWorkspaceConfig {
     type: "row" | "column";
     workspaceId: string;
+}
+
+export interface ItemBundleConfig {
+    type: "row" | "column";
+    itemId: string;
 }
 
 export interface WindowSelector {

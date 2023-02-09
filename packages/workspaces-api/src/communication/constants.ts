@@ -22,7 +22,7 @@ import {
     addWindowConfigDecoder,
     addContainerConfigDecoder,
     addItemResultDecoder,
-    bundleConfigDecoder,
+    bundleWorkspaceConfigDecoder,
     workspaceStreamDataDecoder,
     frameStreamDataDecoder,
     containerStreamDataDecoder,
@@ -49,7 +49,10 @@ import {
     setMaximizationBoundaryConfigDecoder,
     loadingAnimationConfigDecoder,
     getPlatformFrameIdResultDecoder,
-    workspacesImportLayoutsDecoder
+    workspacesImportLayoutsDecoder,
+    bundleItemConfigDecoder,
+    operationCheckConfigDecoder,
+    operationCheckResultDecoder
 } from "../shared/decoders";
 import { ControlOperation, StreamOperation } from "../types/protocol";
 import { WorkspaceEventType } from "../types/subscription";
@@ -82,6 +85,7 @@ type OperationsTypes = "isWindowInWorkspace" |
     "addWindow" |
     "addContainer" |
     "bundleWorkspace" |
+    "bundleItem" |
     "ping" |
     "changeFrameState" |
     "getFrameState" |
@@ -101,7 +105,8 @@ type OperationsTypes = "isWindowInWorkspace" |
     "initFrame" |
     "showLoadingAnimation" |
     "hideLoadingAnimation" |
-    "getPlatformFrameId";
+    "getPlatformFrameId" |
+    "operationCheck";
 type OutgoingMethodTypes = "control" | "frameStream" | "workspaceStream" | "containerStream" | "windowStream";
 export type IncomingMethodTypes = "control";
 
@@ -141,7 +146,7 @@ export type OnOperationsTypes = "shortcutClicked";
 
 export const CLIENT_OPERATIONS: { [key in OnOperationsTypes]: ControlOperation } = {
     shortcutClicked: { name: "shortcutClicked", argsDecoder: shortcutClickedDataDecoder, resultDecoder: voidResultDecoder },
-}
+};
 
 export const OPERATIONS: { [key in OperationsTypes]: ControlOperation } = {
     ping: { name: "ping", resultDecoder: pingResultDecoder },
@@ -177,7 +182,8 @@ export const OPERATIONS: { [key in OperationsTypes]: ControlOperation } = {
     moveWindowTo: { name: "moveWindowTo", argsDecoder: moveWindowConfigDecoder, resultDecoder: voidResultDecoder },
     addWindow: { name: "addWindow", argsDecoder: addWindowConfigDecoder, resultDecoder: addItemResultDecoder },
     addContainer: { name: "addContainer", argsDecoder: addContainerConfigDecoder, resultDecoder: addItemResultDecoder },
-    bundleWorkspace: { name: "bundleWorkspace", argsDecoder: bundleConfigDecoder, resultDecoder: voidResultDecoder },
+    bundleWorkspace: { name: "bundleWorkspace", argsDecoder: bundleWorkspaceConfigDecoder, resultDecoder: voidResultDecoder },
+    bundleItem: { name: "bundleItem", argsDecoder: bundleItemConfigDecoder, resultDecoder: voidResultDecoder },
     hibernateWorkspace: { name: "hibernateWorkspace", argsDecoder: workspaceSelectorDecoder, resultDecoder: voidResultDecoder },
     resumeWorkspace: { name: "resumeWorkspace", argsDecoder: workspaceSelectorDecoder, resultDecoder: voidResultDecoder },
     lockWorkspace: { name: "lockWorkspace", argsDecoder: lockWorkspaceDecoder, resultDecoder: voidResultDecoder },
@@ -191,5 +197,6 @@ export const OPERATIONS: { [key in OperationsTypes]: ControlOperation } = {
     unregisterShortcut: { name: "unregisterShortcut", argsDecoder: shortcutConfigDecoder, resultDecoder: voidResultDecoder },
     showLoadingAnimation: { name: "showLoadingAnimation", argsDecoder: loadingAnimationConfigDecoder, resultDecoder: voidResultDecoder },
     hideLoadingAnimation: { name: "hideLoadingAnimation", argsDecoder: loadingAnimationConfigDecoder, resultDecoder: voidResultDecoder },
-    getPlatformFrameId: { name: "getPlatformFrameId", resultDecoder: getPlatformFrameIdResultDecoder }
+    getPlatformFrameId: { name: "getPlatformFrameId", resultDecoder: getPlatformFrameIdResultDecoder },
+    operationCheck: { name: "operationCheck", argsDecoder: operationCheckConfigDecoder, resultDecoder: operationCheckResultDecoder },
 };

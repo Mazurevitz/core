@@ -30,7 +30,7 @@ import {
     AddWindowConfig,
     AddContainerConfig,
     AddItemResult,
-    BundleConfig,
+    BundleWorkspaceConfig,
     WorkspaceStreamData,
     FrameStreamData,
     ContainerStreamData,
@@ -59,7 +59,10 @@ import {
     FrameBounds,
     SetMaximizationBoundaryConfig,
     LoadingAnimationConfig,
-    GetPlatformFrameIdResult
+    GetPlatformFrameIdResult,
+    ItemBundleConfig,
+    OperationCheckConfig,
+    OperationCheckResult
 } from "../types/protocol";
 import { WorkspaceEventType, WorkspaceEventAction } from "../types/subscription";
 import { Glue42Workspaces } from "../../workspaces";
@@ -676,6 +679,10 @@ export const getPlatformFrameIdResultDecoder: Decoder<GetPlatformFrameIdResult> 
     id: optional(nonEmptyStringDecoder)
 });
 
+export const operationCheckResultDecoder: Decoder<OperationCheckResult> = object({
+    isSupported: boolean()
+});
+
 export const resizeConfigDecoder: Decoder<Glue42Workspaces.ResizeConfig> = object({
     width: optional(positiveNumberDecoder),
     height: optional(positiveNumberDecoder),
@@ -753,12 +760,20 @@ export const pingResultDecoder: Decoder<PingResult> = object({
     live: boolean()
 });
 
-export const bundleConfigDecoder: Decoder<BundleConfig> = object({
+export const bundleWorkspaceConfigDecoder: Decoder<BundleWorkspaceConfig> = object({
     type: oneOf<"row" | "column">(
         constant("row"),
         constant("column")
     ),
     workspaceId: nonEmptyStringDecoder
+});
+
+export const bundleItemConfigDecoder: Decoder<ItemBundleConfig> = object({
+    type: oneOf<"row" | "column">(
+        constant("row"),
+        constant("column")
+    ),
+    itemId: nonEmptyStringDecoder
 });
 
 export const containerSummaryResultDecoder: Decoder<ContainerSummaryResult> = object({
@@ -911,4 +926,8 @@ export const setMaximizationBoundaryAPIConfigDecoder: Decoder<Glue42Workspaces.S
 export const loadingAnimationConfigDecoder: Decoder<LoadingAnimationConfig> = object({
     itemId: nonEmptyStringDecoder,
     type: loadingAnimationTypeDecoder
-})
+});
+
+export const operationCheckConfigDecoder: Decoder<OperationCheckConfig> = object({
+    operation: nonEmptyStringDecoder
+});

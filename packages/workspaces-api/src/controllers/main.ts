@@ -244,8 +244,12 @@ export class MainController implements WorkspacesController {
         return this.base.handleOnRemoved(callback);
     }
 
-    public async bundleTo(type: "row" | "column", workspaceId: string): Promise<void> {
-        return await this.base.bundleTo(type, workspaceId);
+    public async bundleWorkspaceTo(type: "row" | "column", workspaceId: string): Promise<void> {
+        return await this.base.bundleWorkspaceTo(type, workspaceId);
+    }
+
+    public async bundleItemTo(type: "row" | "column", id: string): Promise<void> {
+        return await this.base.bundleItemTo(type, id);
     }
 
     public getWorkspaceContext(workspaceId: string): Promise<any> {

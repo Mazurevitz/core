@@ -144,6 +144,7 @@ export const isOperationSupported = (operation: ControlArguments["operation"]): 
         case "forceLoadWindow":
         case "focusItem":
         case "bundleWorkspace":
+        case "bundleItem":
         case "getFrameSummary":
         case "moveFrame":
         case "getFrameSnapshot":

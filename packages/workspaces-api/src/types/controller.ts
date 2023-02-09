@@ -31,7 +31,8 @@ export interface WorkspacesController {
     getLayoutSummaries(): Promise<Glue42Workspaces.WorkspaceLayoutSummary[]>;
     deleteLayout(name: string): Promise<void>;
     exportLayout(predicate?: (layout: Glue42Workspaces.WorkspaceLayout) => boolean): Promise<Glue42Workspaces.WorkspaceLayout[]>;
-    bundleTo(type: "row" | "column", workspaceId: string): Promise<void>;
+    bundleWorkspaceTo(type: "row" | "column", workspaceId: string): Promise<void>;
+    bundleItemTo(type: "row" | "column", itemId: string): Promise<void>;
     getWorkspaceContext(workspaceId: string): Promise<any>;
     setWorkspaceContext(workspaceId: string, data: any): Promise<void>;
     updateWorkspaceContext(workspaceId: string, data: any): Promise<void>;

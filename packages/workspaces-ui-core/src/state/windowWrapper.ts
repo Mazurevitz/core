@@ -75,6 +75,9 @@ export class WorkspaceWindowWrapper {
     }
 
     public get isSelected(): boolean {
+        if (typeof this.windowContentItem?.parent.getActiveContentItem !== "function") {
+            return false;
+        }
         return idAsString(this.windowContentItem?.parent.getActiveContentItem().config.id) === idAsString(this.windowContentItem.config.id);
     }
 
@@ -125,8 +128,6 @@ export class WorkspaceWindowWrapper {
     }
 
     private getSummaryCore(windowContentItem: GoldenLayout.Component, winId: string): WindowSummary {
-        const parent = windowContentItem?.parent;
-        const activeContentItem = (typeof parent?.getActiveContentItem === "function") ? parent.getActiveContentItem() : undefined;
         const isLoaded = windowContentItem.config.componentState.windowId !== undefined;
         const positionIndex = this.index;
         const workspaceId = store.getByWindowId(winId)?.id;

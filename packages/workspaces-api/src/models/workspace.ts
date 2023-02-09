@@ -379,12 +379,12 @@ export class Workspace implements Glue42Workspaces.Workspace {
     }
 
     public async bundleToRow(): Promise<void> {
-        await getData(this).controller.bundleTo("row", this.id);
+        await getData(this).controller.bundleWorkspaceTo("row", this.id);
         await this.refreshReference();
     }
 
     public async bundleToColumn(): Promise<void> {
-        await getData(this).controller.bundleTo("column", this.id);
+        await getData(this).controller.bundleWorkspaceTo("column", this.id);
         await this.refreshReference();
     }
 

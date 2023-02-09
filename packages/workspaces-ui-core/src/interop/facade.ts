@@ -19,6 +19,7 @@ import {
     AddWorkspaceChildrenArguments,
     CreateWorkspaceArguments,
     BundleWorkspaceArguments,
+    BundleItemArguments,
     MoveFrameArguments,
     MoveWindowToArguments,
     GenerateLayoutArguments,
@@ -179,6 +180,10 @@ export class GlueFacade {
                     break;
                 case "bundleWorkspace":
                     this.handleBundleWorkspace(args.operationArguments);
+                    successCallback(undefined);
+                    break;
+                case "bundleItem":
+                    this.handleBundleItem(args.operationArguments);
                     successCallback(undefined);
                     break;
                 case "getFrameSummary":
@@ -463,6 +468,10 @@ export class GlueFacade {
         return manager.bundleWorkspace(operationArguments.workspaceId, operationArguments.type);
     }
 
+    private handleBundleItem(operationArguments: BundleItemArguments): void {
+        return manager.bundleItem(operationArguments.itemId, operationArguments.type);
+    }
+
     private handleIsWindowInWorkspace(operationArguments: ItemSelector): { inWorkspace: boolean } {
         return {
             inWorkspace: manager.stateResolver.isWindowInWorkspace(operationArguments.itemId)
@@ -575,7 +584,7 @@ export class GlueFacade {
         const contentConfigs = operationArguments.workspaces.map((def) => {
             return this._converter.convertToRendererConfig(this.convertCreateWorkspaceArgumentsToWorkspaceItem(def)) as GoldenLayout.Config;
         });
-        
+
         const workspaceIds = await manager.initFrameLayout(contentConfigs, operationArguments.keepWorkspaces);
 
         workspaceIds.forEach((workspaceId, i) => {
@@ -600,7 +609,7 @@ export class GlueFacade {
     }
 
     private handleOperationCheck(operationArguments: OperationCheckArguments): OperationCheckResult {
-        return {isSupported: isOperationSupported(operationArguments.operation)};
+        return { isSupported: isOperationSupported(operationArguments.operation) };
     }
 
     private handleCreateFrame(operationArguments: CreateFrameArguments): FrameSummary {

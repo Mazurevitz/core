@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Workspace } from "../models/workspace";
-import { WorkspaceSnapshotResult, WorkspaceCreateConfigProtocol, FrameSummaryResult, AddItemResult, WorkspaceSummariesResult, WorkspaceSummaryResult, SimpleWindowOperationSuccessResult, FrameSnapshotResult, WorkspaceStreamData, GetPlatformFrameIdResult } from "../types/protocol";
+import { WorkspaceSnapshotResult, WorkspaceCreateConfigProtocol, FrameSummaryResult, AddItemResult, WorkspaceSummariesResult, WorkspaceSummaryResult, SimpleWindowOperationSuccessResult, FrameSnapshotResult, WorkspaceStreamData, GetPlatformFrameIdResult, OperationCheckResult } from "../types/protocol";
 import { OPERATIONS } from "../communication/constants";
 import { FrameCreateConfig, WorkspaceIoCCreateConfig, WindowCreateConfig, ParentCreateConfig } from "../types/ioc";
 import { IoC } from "../shared/ioc";
@@ -21,7 +21,7 @@ export class BaseController {
         private readonly windows: WindowsAPI,
         private readonly contexts: ContextsAPI,
         private readonly layouts: LayoutsAPI,
-    ) {}
+    ) { }
 
     private get bridge(): Bridge {
         return this.ioc.bridge;
@@ -200,8 +200,18 @@ export class BaseController {
 
     }
 
-    public async bundleTo(type: "row" | "column", workspaceId: string): Promise<void> {
+    public async bundleWorkspaceTo(type: "row" | "column", workspaceId: string): Promise<void> {
         await this.bridge.send(OPERATIONS.bundleWorkspace.name, { type, workspaceId });
+    }
+
+    public async bundleItemTo(type: "row" | "column", itemId: string): Promise<void> {
+        const isSupported = await this.isOperationSupported(OPERATIONS.bundleItem.name);
+
+        if (!isSupported) {
+            throw new Error(`Operation ${OPERATIONS.bundleItem.name} is not supported. Ensure that you are running the latest version of all packages`);
+        }
+
+        await this.bridge.send(OPERATIONS.bundleItem.name, { type, itemId });
     }
 
     public getWorkspaceContext(workspaceId: string): Promise<any> {
@@ -463,5 +473,13 @@ export class BaseController {
         } catch (error) {
             return {}
         }
+    }
+
+    public async isOperationSupported(operation: string): Promise<OperationCheckResult> {
+        if (window.glue42gd) {
+            // operation check is not supported in Glue42Desktop
+            return { isSupported: true };
+        }
+        return await this.bridge.send<OperationCheckResult>(OPERATIONS.operationCheck.name, { operation });
     }
 }

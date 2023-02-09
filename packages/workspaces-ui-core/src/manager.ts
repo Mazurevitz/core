@@ -483,6 +483,17 @@ export class WorkspacesManager {
         this._controller.bundleWorkspace(workspaceId, type);
     }
 
+    public bundleItem(itemId: string, type: "row" | "column"): void {
+        const workspace = store.getByContainerId(itemId);
+        if (!workspace) {
+            throw new Error(`Could not find workspace that contains item with id${itemId} in frame ${this.frameId}`);
+        }
+        if (this._stateResolver.isWorkspaceHibernated(workspace.id)) {
+            throw new Error(`Could not bundle workspace ${workspace.id} because its hibernated`);
+        }
+        this._controller.bundleItem(itemId, type);
+    }
+
     public move(location: { x: number; y: number }): Promise<Glue42Web.Windows.WebWindow> {
         return this._glue.windows.my().moveTo(location.y, location.x);
     }
