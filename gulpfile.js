@@ -18,7 +18,7 @@ const replace = require('@rollup/plugin-replace');
 
 const stableBranch = 'master';
 const releaseBranch = 'release-V3';
-const ignored = ['.git', '.log', 'node_modules', 'packages', '.md', 'package-lock', '.vscode', 'demos', 'live-examples', '.cache', 'archive', 'e2e', 'tutorials', 'templates'];
+const ignored = ['.git', '.log', 'node_modules', 'packages', '.md', 'package-lock', '.vscode', 'demos', 'live-examples', '.cache', 'archive', 'e2e', 'tutorials', 'templates', '.DS_Store'];
 const packagesDirectory = join(__dirname, '/packages/');
 let packagesDirNamesToRelease = [];
 let fullRelease = false;
