@@ -1,3 +1,5 @@
+2.14.1
+chore: bump due to dependencies update
 2.14.0
 feat: updated all dependencies to the latest major versions
 2.13.0
