@@ -7,7 +7,8 @@
     "**/tests/**",
     "*.md",
     "*.txt",
-    "**/workspaces-react/**"
+    "**/workspaces-react/**",
+    "**/package-lock.json"
   ],
   "changelog": {
     "repo": "Glue42/Core",
